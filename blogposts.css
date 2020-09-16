@@ -1,0 +1,23 @@
+/*In this way we point every rule inside the curly brackets to the body section of the html file and each of its children*/
+body {
+    background: #151D21;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    color: white;
+    
+    font-family: 'Lato', sans-serif;
+}
+
+.title-text {
+    font-size: 5rem; 
+    margin-right: 1rem;
+    margin-top: 2rem;
+}
+
+.subtitle-text {
+    font-size: 2rem;
+}
+
+.article-text {
+    font-size: 2vh;
+}

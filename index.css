@@ -1,0 +1,46 @@
+/*In this way we point every rule inside the curly brackets to the body section of the html file and each of its children*/
+body {
+    background: #151D21;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    color: white;
+    
+    font-family: 'Lato', sans-serif;
+}
+
+.first-text{
+    width:100rem;
+    font-size: 6rem; 
+    margin-top: 8rem;
+}
+
+.second-text{
+    margin-top:2rem;
+    font-size: 2rem;
+}
+
+.only-text{
+    margin-top: 13rem;
+    width:100 rem; 
+    font-size: 2rem;
+}
+
+.image{
+    width: 7vw;
+    margin-top: 4rem;
+    margin-bottom: 8rem;
+}
+
+.title-text {
+    font-size: 6rem; 
+    margin-right: 1rem;
+    margin-top: 2rem;
+}
+
+.subtitle-text {
+    font-size: 3vh;
+}
+
+.mycard {
+    margin-top: 2vh;
+}
