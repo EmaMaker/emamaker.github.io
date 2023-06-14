@@ -1,3 +1,3 @@
-Title: EmaMaker's Blog | Projects
+Title: Projects
 
 TODO
