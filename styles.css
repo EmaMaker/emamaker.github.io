@@ -170,3 +170,15 @@ header {
 	text-align: left;
 	overflow: auto;
 }
+
+/*IMAGES*/
+img {
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.img-side-by-side{
+	display: block;
+	width: 45%;
+}
