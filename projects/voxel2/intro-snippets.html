@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Voxel Engine (again) - code snippets</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+
+<h1 id="generation">Generation</h1>
+
+<pre><code>std::array&#60;int, CHUNK_SIZE * CHUNK_SIZE&#62; grassNoiseLUT;
+std::array&#60;int, CHUNK_SIZE * CHUNK_SIZE&#62; dirtNoiseLUT;
+
+void generateNoise(Chunk::Chunk *chunk)
+{
+    for (int i = 0; i &#60; grassNoiseLUT.size(); i++)
+    {
+        grassNoiseLUT[i] = -1;
+        dirtNoiseLUT[i] = -1;
+    }
+
+    Block block_prev{Block::AIR};
+    int block_prev_start{0};
+
+    &#47;&#47; A space filling curve is continuous, so there is no particular order
+    for (int s = 0; s &#60; CHUNK_VOLUME; s++)
+    {
+
+        int x = HILBERT_XYZ_DECODE[s][0] + CHUNK_SIZE * chunk-&#62;getPosition().x;
+        int y = HILBERT_XYZ_DECODE[s][1] + CHUNK_SIZE * chunk-&#62;getPosition().y;
+        int z = HILBERT_XYZ_DECODE[s][2] + CHUNK_SIZE * chunk-&#62;getPosition().z;
+        int d2 = HILBERT_XYZ_DECODE[s][0] * CHUNK_SIZE + HILBERT_XYZ_DECODE[s][2];
+
+        if (grassNoiseLUT[d2] == -1){
+            grassNoiseLUT[d2] = GRASS_OFFSET + (int)((0.5 + noiseGen1.eval(x * NOISE_GRASS_X_MULT, z * NOISE_GRASS_Z_MULT) * NOISE_GRASS_MULT));
+    }
+        if (dirtNoiseLUT[d2] == -1){
+            dirtNoiseLUT[d2] = NOISE_DIRT_MIN + (int)((0.5 + noiseGen2.eval(x * NOISE_DIRT_X_MULT, z * NOISE_DIRT_Z_MULT) * NOISE_DIRT_MULT));
+    }
+
+        int grassNoise = grassNoiseLUT[d2];
+        int dirtNoise = dirtNoiseLUT[d2];
+        int stoneLevel = grassNoise - dirtNoise;
+
+        if (y &#60; stoneLevel)
+            block = Block::STONE;
+        else if (y &#62;= stoneLevel &#38;&#38; y &#60; grassNoise)
+            block = Block::DIRT;
+        else if (y == grassNoise)
+            block = Block::GRASS;
+        else
+            block = Block::AIR;
+
+        if (block != block_prev)
+        {
+            chunk-&#62;setBlocks(block_prev_start, s, block_prev);
+            block_prev_start = s;
+        }
+
+        block_prev = block;
+    }
+
+    chunk-&#62;setBlocks(block_prev_start, CHUNK_VOLUME, block_prev);
+    chunk-&#62;setState(Chunk::CHUNK_STATE_GENERATED, true);
+}
+</code></pre>
+
+<h1 id="concentric-circles">Concentric circles</h1>
+
+<pre><code>    int index{0};
+    int rr{RENDER_DISTANCE * RENDER_DISTANCE};
+
+        int xp{0}, x{0};
+        bool b = true;
+
+        &#47;&#47; Iterate over all chunks, in concentric spheres starting fron the player and going outwards. Alternate left and right
+        &#47;&#47; Eq. of the sphere (x - a)² + (y - b)² + (z - c)² = r²
+        while (xp &#60;= RENDER_DISTANCE)
+        {
+        &#47;&#47; Alternate between left and right
+            if (b) x = +xp;
+            else x = -xp;
+
+        &#47;&#47; Step 1. At current x, get the corresponding y values (2nd degree equation, up to 2
+        &#47;&#47; possible results)
+            int y1 = static_cast&#60;int&#62;(sqrt((rr) - x*x));
+
+            for (int y = -y1 + 1 ; y &#60;= y1; y++)
+            {
+                &#47;&#47; Step 2. At both y&#39;s, get the corresponding z values
+        int z1 = static_cast&#60;int&#62;(sqrt( rr - x*x - y*y));
+
+                for (int z = -z1 + 1; z &#60;= z1; z++){
+            chunks_indices[index][0] = x;
+            chunks_indices[index][1] = y;
+            chunks_indices[index][2] = z;
+            index++;
+        }
+            }
+
+            if (!b)
+            {
+                xp++;
+                b = true;
+            }
+            else  b = false;
+    }
+    chunks_volume_real = index;
+
+</code></pre>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>

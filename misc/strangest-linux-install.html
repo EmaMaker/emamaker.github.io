@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>My strangest Linux install to date</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+
+<p>My dad bought an HP EliteBook 820 G2 for cheap. It came without an hard drive, but looking at
+the mobo, it supported both 2.5&#8217; sata and a M.2 slot. However, the M.2 slot only supported 40mm and 60mm drives.</p>
+
+<p>Moreover, the 2.5&#8217; slot needs an adapter from the pins exposed on the mobo to a proper sata
+connector, which our laptop is lacking. This meant that I could not use some SSDs I had laying around.</p>
+
+<p>Anyway, we managed to find 40mm M.2 drives on eBay and we bought one, has the shipping
+ required less time that ordering the adapter (at nearly the same cost).</p>
+
+<p>My dad has some hardware (namely a ScanSnap scanner) that only works on Windows (not supported
+     by SANE yet :&#47;), so once I installed the drive I went
+ to install Windows, but I got an error saying &#8220;Windows could not be installed on
+ this drive&#8221;, pointing to some BIOS options preventing the drive from being used as a bootable
+ device.</p>
+
+<p>So I went and checked the boot options in the BIOS, and made sure the M.2&#47;NVME option was
+ enabled and first in priority. The I tried installing windows again, only to be greeted with
+ the same error.</p>
+
+<p>Mh, strange. Let&#8217;s try with Linux, what could go wrong? I plug in my Ventoy USB stick and boot
+Linux Mint. Install process is flawless and finished without errors, so I reboot, eject the
+install media to boot into the newly installed OS. Now the laptop is behaving like there is
+no OS installed. </p>
+
+<p>Ok, let&#8217;s check the boot menu. No EFI partitions found to boot OSes from.</p>
+
+<p>Maybe a bad drive? Bad installation? I boot up the Mint installer again and check the partitions.
+Everything is there, no problem. I also tried using the 80mm M.2 NVME drive from my main laptop, again to no avail.</p>
+
+<p>So, apparently the BIOS lists the M.2 NVME drive as a bootable medium, but cannot actually boot
+stuff from it. Like, WHAT, WHY? I honestly cannot explain how much this confuses me. <a href="!https://alemauri.eu">A friend of
+mine</a> advanced the hypothesis that the slot also works for M.2 mSata drives, and the BIOS has
+drivers for those but lacks drivers for NVME. Makes sense, although I don&#8217;t have a mSata
+drive laying around to test.</p>
+
+<p>BUT, low and behold, the BIOS also lists the SD card as a bootable medium. And in the boot menu I can actually look
+for efi files in the SD card.</p>
+
+<p>My next trick takes a page out of old school Raspberry Pi.
+Before the newer generations of Pi (namely before the Pi4) came around, Raspberry Pi&#8217;s didn&#8217;t natevely support booting from USB, and only
+supported booting from the SD card, yet people used USB SDD&#8217;s as OS drives, only having the SD
+Card to launch the bootloader, which then loaded the OS from the USB SDD.</p>
+
+<p>Here&#8217;s exactly what we do: we install a working bootloader for Linux on the sdcard, point
+it to load the OS from the NVME SSD, then I edit <code>&#47;etc&#47;fstab</code> to mount the SD Card as the
+<code>&#47;boot</code> partition, so that updates and changes to the bootloader are seamless and do not require
+manual intervention.</p>
+
+<p>Here&#8217;s what I have done, in order:</p>
+
+<ul>
+<li><p>Install systemd-bootctl on the SD Card</p></li>
+<li><p>Copy the kernel files from &#47;boot to the SD Card</p></li>
+<li><p>Update <code>&#47;etc&#47;fstab</code> to mount the SD Card as <code>&#47;boot</code></p></li>
+</ul>
+
+<p>Cool, now Linux actually starts to boot, loading kernel and bootloader from the SD Card (kinda
+    slow, but better than nothing I guess). The keywords are <em>starts to boot</em> because it
+never gets to the Display Manager, failing to mount some drive listed in <code>&#47;etc&#47;fstab</code>, and
+throwing me in the initramfs recovery shell.
+From here I can check which drives are giving problems. And guess what? the SD Card that cannot be found.</p>
+
+<p>My only idea at this point is that eMMC device support is loaded as a kernel module, at least for how Mint&#8217;s
+kernel is compiled. A quick check with <code>zcat &#47;proc&#47;config.gz</code> that I did later confirmed it.</p>
+
+<p>So I edit <code>&#47;etc&#47;fstab</code> once and for all to ignore errors relative to <code>&#47;boot</code>. This means that
+Mint will not mount the SD Card automatically at boot, but I will have to intervene to manually
+on something like a kernel update, since systemd-bootctl requires <code>initramfs-linux and vmlinuz</code> to
+be on the same partition, which needs to be mounted to <code>&#47;boot</code>.</p>
+
+<p>Speaking of kernel updates, <code>update-initramfs</code> is broken! And this took me a while to figure out.
+<code>update-initramfs</code> does exactly what the name says. In Mint, kernel files are stored as
+<code>initrd._version_</code> and <code>vmlinuz._version_</code> files. Upon an update, <code>update-initramfs</code> puts
+the new kernel in <code>&#47;boot</code>, recompiles what is needed and makes sure to keep at least one older version, together with
+the current one, in that folder. <code>update-initramfs</code> then symlinks the newest
+files to <code>initrd</code> and <code>vmlinuz</code> respectevely to avoid messing with grub.cfg everytime
+there is an update.</p>
+
+<p>Well, I formatted my sdcard as FAT32, which does not support symlinks! So I disabled them
+by placing this line in <code>&#47;etc&#47;kernel-img.conf</code></p>
+
+<pre><code>do_symlinks = no
+</code></pre>
+
+<p>This also means that now I have to intervene on every kernel update to make sure systemd-bootctl
+is using the right files. Totally not seamless, but at least it works, am I right? No? ( :&#47;
+    ).</p>
+
+<p>Needless to say, I ended up buying the 2.5&#8217; sata adapter to install a SSD like a normal human
+being. Though I will still try to install Win10 on the Sata SSD and Linux on the NVME one and
+have a solid dual boot. Yet this little adventure made for a fun night of debugging and
+tinkering, which always makes me happy.</p>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>

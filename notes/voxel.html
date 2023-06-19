@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Voxel notes</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+
+<h1 id="old-voxel-engine">Old voxel engine:</h1>
+
+<h2 id="data-structure">Data structure</h2>
+
+<p>Used 1d arrays for storing blocks in Chunks. This is good enough, 1d arrays are faster to poll than 3d arrays. Memory usage shouldn&#8217;t be that bad.</p>
+
+<p>Used 3d arrays for storing chunks in the world, this is VERY VERY bad, there&#8217;s a lot of wasted memory. Each update loop the engine looked in a sphere around the player of radius RENDER DISTANCE and updated each chunk that needed it. Then each chunk, using a JME3 Abstract Control was updated each loop and the chunk was removed or added to the scene if needed. This infact created a constant usage of memory, but a limited world. </p>
+
+<h2 id="save-files">Save files</h2>
+
+<p>Saved and loaded from file by saving every single block, again very very bad. Could create up to GIGABYTES in save files</p>
+
+<h1 id="new-voxel-engine">New voxel engine</h1>
+
+<h2 id="data-structure-1">Data Structure</h2>
+
+<p>Using interval trees to store blocks in Chunks, as suggested by <a href="https://0fps.net/2012/01/14/an-analysis-of-minecraft-like-engines/">0fps</a> and on <a href="https://teddit.pussthecat.org/r/VoxelGameDev/comments/elap1u/using_interval_maps_instead_of_arrays_for_storing/">reddit</a>. Thought about using SVOs (Sparse Voxel Octrees) as described in the nvidia paper or even SVDAG (Sparse Voxel Direct Acyclic Graph) but they just don&#8217;t look like the right tool for job.</p>
+
+<p>Chunks are then stored into an hashmap as they get created and destroyed. This ensured O(1) access to a Chunk and good memory usage, while not giving limits to the size of the world
+Interval trees kinda give built-in memory compression like in Run length encoding, with O(log n) average and O(n) worst case time to add or remove nodes. I&#8217;m not really removing nodes right now when needed, and they tend to grow pretty large in memory footprint as of (15&#47;08&#47;2002).</p>
+
+<p>Actually Interval Trees don&#8217;t really seem like the best tool for the job either, as they require a start and an end to an interval, while I just really need to know the start of the interval (like in Run Length encoding) representing a run of identical blocks, and assume that it will either continue until the end of there will be a new node in the tree representing the start of the new interval right after it. I will probably be better off using some kind of Binary Research Tree, storing a key-value pair where the key is the start of the run (interval) and the value is the type of block. Probably the best option is to use a Red-Black Tree instead of a plain Binary Research Tree. This is similar to what the <a href="!missing_link">reddit guy</a> did, except he was using C++ IntervalMaps, which are implemented as Red-Black Trees </p>
+
+<h3 id="update">Update</h3>
+
+<p>I implemented IntervalMaps starting from Java&#8217;s java.util.TreeMaps, which are implemented as Red-Black Trees, and had a huge reduction in memory usage
+improvement (down to 80-85 MB of memory from 400+).
+For further compression, i think some kind of space-filling curve could compress the tree even further by better expressing local conglomerates of the same kind of blocks in the 3d-to-1d flatteing. By researching space-filling curves, on <a href="!https://en.wikipedia.org/wiki/Space-filling_curve">wikipedia</a>, I&#8217;m lead to think that an Hilbert Curve is better than <a href="!https://en.wikipedia.org/wiki/Z-order_curve">Morton</a> curves or Morton ordering for my scope, <a href="!http://www.volumesoffun.com/implementing-morton-ordering-for-chunked-voxel-data/index.html">although I&#8217;ve seen morton ordering used in big voxel engines projects</a>. I will try both and check which one compresses better.
+By researching 3D Hilbert curves, i stumbled upon <a href="https://eisenwave.github.io/voxel-compression-docs/rle/hilbert_curves.html">this website</a>, which brings to <a href="!http://and-what-happened.blogspot.com/2011/08/fast-2d-and-3d-hilbert-curves-and.html">this other site for C implementations</a></p>
+
+<h3 id="update-2">Update 2</h3>
+
+<p>Implemented Hilbert Curves and re-run benchmarks on all branches and techniques used until now. I apparently had huge problems in my old benchmarks, because I reported very different numbers across all tests, even on stuff I haven&#8217;t touched in a while.</p>
+
+<p>I tested these three techniques:
+- Interval Trees, with my own (crappy in some ways) implementation, with nested iteration as a 3d-to-1d flattening
+- Interval Maps, with nested iteration as a 3d-to-1d flattening
+- Interval Maps, with hilbert curves</p>
+
+<p>They all use chunk states instead of queues, as continously filling and empting queues was not making the garbage collector happy and some huge memory usage spikes could be seen in VisualVM</p>
+
+<p>In the end, all the techniques seem to perform about equal in my base benchmark (creating a cube of render_distance*2 side, generated with arrayGenerateCorner. Cubical chunks with a side of 16 voxels), reporting:</p>
+
+<p>RENDER_DISTANCE = 8</p>
+
+<ul>
+<li><p>Chunk size 32 (just creating chunks, no world update)</p>
+
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Normal Heap (used&#47;allocated)</th>
+<th>After 1GC (used&#47;allocated)</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Interval Trees (nested iteration)</td>
+<td>74&#47;154</td>
+<td>32&#47;112</td>
+</tr>
+<tr>
+<td>Interval Maps (space filling)</td>
+<td>128&#47;210</td>
+<td>26&#47;98</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>Chunk size 16 (normal world update loop)</p>
+
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Normal Heap (used&#47;allocated)</th>
+<th>After 1GC (used&#47;allocated)</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Interval Trees (nested iteration)</td>
+<td>148&#47;196</td>
+<td>81&#47;196</td>
+</tr>
+<tr>
+<td>Interval Maps (space filling - Hilbert Bits 2)</td>
+<td>100&#47;193</td>
+<td>59&#47;193</td>
+</tr>
+<tr>
+<td>Interval Maps (space filling - Hilbert Bits 4)</td>
+<td>88&#47;192</td>
+<td>55&#47;193</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+
+<p>To be noted:
+- IntervalTrees seem to have a less &#8220;spikey&#8221; use of ram, but that could be due to other causes rather than the data structure itself
+- Using a spacefilling curve requires more calculations than nested iteration, but that can be optimized
+- The manual GC call just cuts the allocated heap, as the used heap already falls on its own once chunk generation has finished</p>
+
+<p>I honestly cannot explain myself how intervaltrees can have such a similar memory usage to intervalmaps. On one hand, I know that my implementation of intervaltrees lacks the removal of adjacent similar nodes, and that leaves a lot of unneeded nodes around. Maybe this could be better noted once block picking is added. As of right now, this situation doesn&#8217;t really occur.
+On the other hand, java&#8217;s implementation of TreeMaps has some stuff that I don&#8217;t really need, and the memory size of the structure itself could be reduced if I were to reimplement it to better suit my needs.</p>
+
+<p>Also I haven&#8217;t tested interval trees with a space filling curve, but I don&#8217;t think that would change much.</p>
+
+<h2 id="ideas">Ideas</h2>
+
+<ul>
+<li>I&#8217;m currently using greedy meshing to obtain a triangle mesh out of the interval tree, by first converting it into an array. It is possible that, by changing the function i use to flatten a 3d index into a 2d one, the interval tree could be used directly into the greedy meshing function without a preliminary conversion to an array. The use of an array could still be need for fast chunk generation though</li>
+<li>If going with bigger chunks, probably it will be best to just transform the tree into an array past a certain height (meaning very different blocks)</li>
+<li>At some point, chunks need to be unloaded from memory. This can be done in three stages:
+
+<ol>
+<li>Chunks within render distance are shown and eventual logic gets updated</li>
+<li>Chunks little outside of render distance are show but no logic gets update (what about LODs?)</li>
+<li>Chunks that havebeen far from render distance for a short time are kept in a separate hashmap with just the deltas stored. After enough time has passed, they get dumped to the HDD and completely unloaded from memory</li>
+</ol>
+
+<p>This method makes an assumption on chunk structure, such that generation is done at runtime and only modifications are permanently stored. This also means that generation data and modification data are stored in two different places, possibly using two different trees, a tree and an array, or something else</p></li>
+<li>SVDAGs look like an interesting structure to look more deeply into and try to implement in some way. Maybe textures will be difficult to implement, but they would probably give access to some non-cubical blocks, by making them up of blocks smaller that the 1-Unit size decided for a single voxel</li>
+</ul>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>

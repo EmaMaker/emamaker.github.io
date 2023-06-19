@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>Atom feed</title>
+	<subtitle></subtitle>
+	<link href="https://emamaker.com/atom.xml/" rel="self" />
+	<link href="https://emamaker.com/" />
+	<id>https://emamaker.com</id>
+	<updated>2023-01-31T21:16:44+01:00</updated>
+	<entry>
+		<title>Developing a Voxel Engine</title>
+		<link href="/projects/voxelengine.html" />
+		<id>/projects/voxelengine.html</id>
+		<updated>2023-01-31 21:16:42.739745149 +0100</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s Blog</title>
+		<link href="/index.html" />
+		<id>/index.html</id>
+		<updated>2023-01-20 12:18:41.462764405 +0100</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s blog | Events</title>
+		<link href="/events/index.html" />
+		<id>/events/index.html</id>
+		<updated>2023-01-20 12:18:41.459430732 +0100</updated>
+	</entry>
+	<entry>
+		<title>MakerFaire Rome 2017</title>
+		<link href="/events/makerfaire2017.html" />
+		<id>/events/makerfaire2017.html</id>
+		<updated>2023-01-20 12:18:41.459430732 +0100</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s blog | Notes</title>
+		<link href="/notes/index.html" />
+		<id>/notes/index.html</id>
+		<updated>2023-01-20 12:18:41.459430732 +0100</updated>
+	</entry>
+	<entry>
+		<title>Google Meet Bot attends online lessons for me</title>
+		<link href="/projects/googlemeetbot.html" />
+		<id>/projects/googlemeetbot.html</id>
+		<updated>2023-01-20 12:18:41.459430732 +0100</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s Blog | Projects</title>
+		<link href="/projects/index.html" />
+		<id>/projects/index.html</id>
+		<updated>2023-01-20 12:18:41.459430732 +0100</updated>
+	</entry>
+	<entry>
+		<title>SPQR Robotics Team</title>
+		<link href="/projects/spqr.html" />
+		<id>/projects/spqr.html</id>
+		<updated>2023-01-20 12:18:41.459430732 +0100</updated>
+	</entry>
+	<entry>
+		<title>Voxel notes</title>
+		<link href="/notes/voxel.html" />
+		<id>/notes/voxel.html</id>
+		<updated>2023-01-20 12:18:41.456097059 +0100</updated>
+	</entry>
+</feed>
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>Atom feed</title>
+	<subtitle></subtitle>
+	<link href="https://emamaker.com/atom.xml/" rel="self" />
+	<link href="https://emamaker.com/" />
+	<id>https://emamaker.com</id>
+	<updated>2023-06-19T18:40:10+02:00</updated>
+	<entry>
+		<title>Voxel Engine 2.0 (Index)</title>
+		<link href="/projects/voxel2/index.html" />
+		<id>/projects/voxel2/index.html</id>
+		<updated>2023-06-19 18:36:54.195574297 +0200</updated>
+	</entry>
+	<entry>
+		<title>Voxel Engine (again)</title>
+		<link href="/projects/voxel2/intro.html" />
+		<id>/projects/voxel2/intro.html</id>
+		<updated>2023-06-19 18:36:31.938907489 +0200</updated>
+	</entry>
+	<entry>
+		<title>Voxel Engine (again) - code snippets</title>
+		<link href="/projects/voxel2/intro-snippets.html" />
+		<id>/projects/voxel2/intro-snippets.html</id>
+		<updated>2023-06-18 15:22:55.756606641 +0200</updated>
+	</entry>
+	<entry>
+		<title>Developing a Voxel Engine</title>
+		<link href="/projects/voxelengine.html" />
+		<id>/projects/voxelengine.html</id>
+		<updated>2023-06-18 15:20:34.846610898 +0200</updated>
+	</entry>
+	<entry>
+		<title>Projects</title>
+		<link href="/projects/index.html" />
+		<id>/projects/index.html</id>
+		<updated>2023-06-17 21:45:42.466642670 +0200</updated>
+	</entry>
+	<entry>
+		<title>Misc</title>
+		<link href="/misc/index.html" />
+		<id>/misc/index.html</id>
+		<updated>2023-06-14 12:38:27.963158455 +0200</updated>
+	</entry>
+	<entry>
+		<title>My strangest Linux install to date</title>
+		<link href="/misc/strangest-linux-install.html" />
+		<id>/misc/strangest-linux-install.html</id>
+		<updated>2023-06-14 12:38:27.963158455 +0200</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s Blog</title>
+		<link href="/index.html" />
+		<id>/index.html</id>
+		<updated>2023-06-14 12:38:27.959825123 +0200</updated>
+	</entry>
+	<entry>
+		<title>Notes</title>
+		<link href="/notes/index.html" />
+		<id>/notes/index.html</id>
+		<updated>2023-06-14 12:38:27.959825123 +0200</updated>
+	</entry>
+	<entry>
+		<title>Google Meet Bot attends online lessons for me</title>
+		<link href="/projects/googlemeetbot.html" />
+		<id>/projects/googlemeetbot.html</id>
+		<updated>2023-06-14 12:38:27.959825123 +0200</updated>
+	</entry>
+	<entry>
+		<title>MakerFaire Rome 2017</title>
+		<link href="/events/makerfaire2017.html" />
+		<id>/events/makerfaire2017.html</id>
+		<updated>2023-06-14 12:32:47.019835145 +0200</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s blog | Events</title>
+		<link href="/events/index.html" />
+		<id>/events/index.html</id>
+		<updated>2023-06-14 12:32:28.939835647 +0200</updated>
+	</entry>
+	<entry>
+		<title>Voxel notes</title>
+		<link href="/notes/voxel.html" />
+		<id>/notes/voxel.html</id>
+		<updated>2023-06-14 12:32:28.939835647 +0200</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s blog | Events</title>
+		<link href="/events/index.html" />
+		<id>/events/index.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>MakerFaire Rome 2017</title>
+		<link href="/events/makerfaire2017.html" />
+		<id>/events/makerfaire2017.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s Blog</title>
+		<link href="/index.html" />
+		<id>/index.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>Notes</title>
+		<link href="/notes/index.html" />
+		<id>/notes/index.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>Voxel notes</title>
+		<link href="/notes/voxel.html" />
+		<id>/notes/voxel.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>Google Meet Bot attends online lessons for me</title>
+		<link href="/projects/googlemeetbot.html" />
+		<id>/projects/googlemeetbot.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>Projects</title>
+		<link href="/projects/index.html" />
+		<id>/projects/index.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>Developing a Voxel Engine</title>
+		<link href="/projects/voxelengine.html" />
+		<id>/projects/voxelengine.html</id>
+		<updated>2023-06-14 12:32:28.936502312 +0200</updated>
+	</entry>
+	<entry>
+		<title>SPQR Robotics Team</title>
+		<link href="/projects/spqr/index.html" />
+		<id>/projects/spqr/index.html</id>
+		<updated>2023-05-29 23:26:44.511779568 +0200</updated>
+	</entry>
+	<entry>
+		<title>SPQR Robotics Team</title>
+		<link href="/projects/spqr/spqr.html" />
+		<id>/projects/spqr/spqr.html</id>
+		<updated>2023-05-29 23:23:00.953525016 +0200</updated>
+	</entry>
+	<entry>
+		<title>SPQR, Year 3 Part 2</title>
+		<link href="/projects/spqr/year3p2.html" />
+		<id>/projects/spqr/year3p2.html</id>
+		<updated>2023-05-29 23:21:17.366038901 +0200</updated>
+	</entry>
+	<entry>
+		<title>SPQR, Year 1 Part 2</title>
+		<link href="/projects/spqr/year1p2.html" />
+		<id>/projects/spqr/year1p2.html</id>
+		<updated>2023-05-29 23:21:06.015945128 +0200</updated>
+	</entry>
+	<entry>
+		<title>SPQR, Year 3 Part 1</title>
+		<link href="/projects/spqr/year3p1.html" />
+		<id>/projects/spqr/year3p1.html</id>
+		<updated>2023-05-29 23:21:02.462582261 +0200</updated>
+	</entry>
+	<entry>
+		<title>SPQR, Year 2</title>
+		<link href="/projects/spqr/year2.html" />
+		<id>/projects/spqr/year2.html</id>
+		<updated>2023-05-29 23:20:45.445772986 +0200</updated>
+	</entry>
+	<entry>
+		<title>SPQR, Year 1 Part 1</title>
+		<link href="/projects/spqr/year1p1.html" />
+		<id>/projects/spqr/year1p1.html</id>
+		<updated>2023-05-29 23:20:17.212198617 +0200</updated>
+	</entry>
+</feed>
