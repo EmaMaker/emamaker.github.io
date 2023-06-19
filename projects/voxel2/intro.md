@@ -436,6 +436,20 @@ Using a concurrent HashMap to store chunks, also means that, while meshing a chu
 chunks can also be probed to check for blocks and not render useless borders to each chunk, which
 means less quads to draw and a happier GPU.
 
+# But how does it run?
+
+I record using OBS studio, NVENC H264 FFMPEG, targeting 60FPS and full resolution (1920x1080)
+
+While not recording, runs at about 400FPS on Ryzen 7 3700X/16GB/AMD Radeon HD 6850 (yes it's a 10+ years old card)
+
+While recording runs at about 70FPS on Ryzen 7 3700X/16GB/NVIDIA Tesla M40 while recording and
+encoding footage with NVENC at 60FPS with ffmpeg.
+
+While not recording, runs at a solid 170FPS on Ryzen 7 3700X/16GB/NVIDIA Tesla M40 (probably due to limitations of PRIME Offloading, since the Tesla M40 has no display outputs and thus the output needs to be redirected to the Radeon card).
+
+Also runs at about 80FPS on my ThinkPad Yoga 370 (i5-7200U, Intel HD 620, 16GB DDR4 single channel RAM)
+
+
 # Conclusion
 
 It has been a blast! I'm really enjoying building this engine and there is a lot of stuff I want to
@@ -458,7 +472,12 @@ You can see the progression of this project via git:
 <a href="https://github.com/emamaker/voxel-engine">Mirror</a>
 
 
-Below is also a little video wandering around in the world.
+Below is also a little video wandering around in the world:
+
+[Youtube](https://youtu.be/en2BnWW8Mbs)
+		// [Invidious](http://invidious.snopyta.org/watch?v=en2BnWW8Mbs)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/en2BnWW8Mbs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ## For the Future {#future}
 
