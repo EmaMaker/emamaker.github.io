@@ -25,9 +25,7 @@ href="https://codeberg.com/emamaker/">Codeberg</a>
 </center>
 </header>
 <article>
-
 <h1 id="generation">Generation</h1>
-
 <pre><code>std::array&#60;int, CHUNK_SIZE * CHUNK_SIZE&#62; grassNoiseLUT;
 std::array&#60;int, CHUNK_SIZE * CHUNK_SIZE&#62; dirtNoiseLUT;
 
@@ -84,9 +82,7 @@ void generateNoise(Chunk::Chunk *chunk)
     chunk-&#62;setState(Chunk::CHUNK_STATE_GENERATED, true);
 }
 </code></pre>
-
 <h1 id="concentric-circles">Concentric circles</h1>
-
 <pre><code>    int index{0};
     int rr{RENDER_DISTANCE * RENDER_DISTANCE};
 

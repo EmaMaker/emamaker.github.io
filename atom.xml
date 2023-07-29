@@ -68,7 +68,13 @@
 	<link href="https://emamaker.com/atom.xml/" rel="self" />
 	<link href="https://emamaker.com/" />
 	<id>https://emamaker.com</id>
-	<updated>2023-06-19T18:40:10+02:00</updated>
+	<updated>2023-07-29T17:32:21+02:00</updated>
+	<entry>
+		<title>Quickie - Printrboard USB connection failure</title>
+		<link href="/misc/printrbot-usb.html" />
+		<id>/misc/printrbot-usb.html</id>
+		<updated>2023-07-29 17:23:14.219853134 +0200</updated>
+	</entry>
 	<entry>
 		<title>Voxel Engine 2.0 (Index)</title>
 		<link href="/projects/voxel2/index.html" />
@@ -208,31 +214,31 @@
 		<updated>2023-05-29 23:23:00.953525016 +0200</updated>
 	</entry>
 	<entry>
-		<title>SPQR, Year 3 Part 2</title>
+		<title>year3p2.html</title>
 		<link href="/projects/spqr/year3p2.html" />
 		<id>/projects/spqr/year3p2.html</id>
 		<updated>2023-05-29 23:21:17.366038901 +0200</updated>
 	</entry>
 	<entry>
-		<title>SPQR, Year 1 Part 2</title>
+		<title>year1p2.html</title>
 		<link href="/projects/spqr/year1p2.html" />
 		<id>/projects/spqr/year1p2.html</id>
 		<updated>2023-05-29 23:21:06.015945128 +0200</updated>
 	</entry>
 	<entry>
-		<title>SPQR, Year 3 Part 1</title>
+		<title>year3p1.html</title>
 		<link href="/projects/spqr/year3p1.html" />
 		<id>/projects/spqr/year3p1.html</id>
 		<updated>2023-05-29 23:21:02.462582261 +0200</updated>
 	</entry>
 	<entry>
-		<title>SPQR, Year 2</title>
+		<title>year2.html</title>
 		<link href="/projects/spqr/year2.html" />
 		<id>/projects/spqr/year2.html</id>
 		<updated>2023-05-29 23:20:45.445772986 +0200</updated>
 	</entry>
 	<entry>
-		<title>SPQR, Year 1 Part 1</title>
+		<title>year1p1.html</title>
 		<link href="/projects/spqr/year1p1.html" />
 		<id>/projects/spqr/year1p1.html</id>
 		<updated>2023-05-29 23:20:17.212198617 +0200</updated>
