@@ -179,6 +179,17 @@ img {
 }
 
 .img-side-by-side{
-	display: block;
+	display: flex;
 	width: 45%;
 }
+
+.half {
+   white-space:nowrap;
+}
+.half img {
+   display:inline;
+}
+.half figcaption {
+  display:block
+}
+
