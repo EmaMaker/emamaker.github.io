@@ -68,12 +68,24 @@
 	<link href="https://emamaker.com/atom.xml/" rel="self" />
 	<link href="https://emamaker.com/" />
 	<id>https://emamaker.com</id>
-	<updated>2023-07-29T17:32:21+02:00</updated>
+	<updated>2023-07-31T14:05:47+02:00</updated>
+	<entry>
+		<title>Fixing my High School Diploma Project</title>
+		<link href="/projects/function-gen-fix.html" />
+		<id>/projects/function-gen-fix.html</id>
+		<updated>2023-07-31 12:37:35.003133477 +0200</updated>
+	</entry>
+	<entry>
+		<title>Building a DDS Signal Generator with a Teensy 3.5</title>
+		<link href="/projects/function-gen.html" />
+		<id>/projects/function-gen.html</id>
+		<updated>2023-07-30 17:20:01.304151690 +0200</updated>
+	</entry>
 	<entry>
 		<title>Quickie - Printrboard USB connection failure</title>
 		<link href="/misc/printrbot-usb.html" />
 		<id>/misc/printrbot-usb.html</id>
-		<updated>2023-07-29 17:23:14.219853134 +0200</updated>
+		<updated>2023-07-29 17:43:52.826482862 +0200</updated>
 	</entry>
 	<entry>
 		<title>Voxel Engine 2.0 (Index)</title>

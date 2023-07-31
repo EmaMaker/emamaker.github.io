@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fixing my High School Diploma Project</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+<h1 id="intro">Intro</h1>
+<p>This is a continuation to another article, <a href="/projects/function-gen.html"> check it out!</a></p>
+<h1 id="fixing-my-high-school-diploma-project">Fixing my High School Diploma Project</h1>
+<p>When I graduated High School, every student had to substain a final oral exam.
+As I attended a technical school, the main part of the exam was the exposition of a project, designed and built by the student,
+    followed by questions on other subjects and extracurricular activities and projects.</p>
+<p>The teachers had to assign a project to each student, but my teachers where open to ideas from us
+(for kindess or lazyness I can&#8217;t tell, but I tend to the latter). I decided to build a function
+generator, and my teachers allowed me to. A function generator is a electronics lab instrument used
+to generate signals of different waveforms (say, sinusoidal, square, triangle, sawtooth&#8230;) with
+different frequencies, amplitude, dc offset.</p>
+<p>Now, I&#8217;m not really an analog guy, and High School left me with some pretty big holes in the
+knowledge of electronics. Plus our labs at school were full of old, analog function generators, so
+building yet another one wouldn&#8217;t be anything particularly interesting. So I decided to build a
+digital function generator, based on a microcontroller (in this case a Teensy 3.5) commanding a DAC
+(Digital-Analog Converter, the Teensy 3.5 has two on board). I went with the Teensy 3.5 because that
+was what we were using at the time in the <a href="/projects/spqr/spqr.html">robotics lab</a> and since
+we run low on time, I decided to stick with what I knew well.</p>
+<p>I think I did pretty well with the project. I designed the circuits and the PCB myself, wrote the
+firmware for microcontroller and overall ended up with a function generator that could output sine
+and square waves up to 1MHz. I open-sourced it under the GPLv3, and you can <a
+href="https://github.com/emamaker/signalgenerator-teensy">check it out on GitHub</a>. In the repo is
+also an explanation of the design choices I made at the time. Alongside the main PCB, I also built a
+little power supply board using a transformer and a couple 78xx&#47;79xx ICs to get 5V, 12V, -12V power
+lanes for the board. I got a friend of mine from the robotics lab to also design me a case to make
+out of laser-cut 4mm plywood.</p>
+<h1 id="issues">Issues</h1>
+<p>The exam was a success, the teachers really liked my project and so I did. Yet during the
+presentation I came across a few problems I would have liked not to, here&#8217;s a list of them.</p>
+<ul>
+<li><p>I mounted a 80mm fan to the case to blow air on the components and prevent them from overheathing.
+Much more a preventive measure that something actually needed. When the fan was running, the output
+waveform from the generator got all distorted, sometimes disappearing completely.</p></li>
+<li><p>Managing the amplitude and the offset of the wave was an absolute pain. The controls seemed
+counter-intuitive and also seemed to interfere with each other.</p></li>
+<li><p>The information reported on the LCD Screen about amplitude and DC offset were always wrong.</p></li>
+</ul>
+<p>Let&#8217;s go in order and see how I fixed these issues.</p>
+<h2 id="the-fan">The Fan</h2>
+<p>Actually this one I&#8217;ve know since the exam day itself. When I noticed it during the exam, I
+immediately explained a possible reason it was happening.</p>
+<p>The transformer I was using was a little 30Vpp 6VA unit, where VA means Volt-Ampere, a.k.a Watt.
+This means the transformer can provide at most 6VA&#47;30V=0.5A of current. With the fan alone sucking
+0.4A at 12V (nominal, probably more), the voltage on the 12V rail dropped enough to be a problem for
+the OpAmps in the circuit. The 5V rail was not touched by this, despite being derived from the 12V
+rail.</p>
+<p>I couldn&#8217;t notice this problem during my tests because I was using an ATX PC PSU, which can output
+plenty of current for my microcontroller and a fan.</p>
+<p>Using a beefier transformer solved this problem, yet it introduced the problem of having the design a
+new case to house it.</p>
+<h2 id="amplification-offset-stage">Amplification + offset stage</h2>
+<p>I used the DAC to only generate a low-voltage signal. A later stage with OpAmps took care of
+amplificating this low-voltage signal up in the power supply (-12V, 12V) range and adding an
+eventual DC Offset to the signal, both set with two potentiometers on the board.</p>
+<p>First problem I noticed: the potentiometers were logaritmic and not linear! That&#8217;s surely a reason
+controlling them was a pain. At the time I honestly didn&#8217;t even know there where both linear and
+logarithmic potentiometer. I replaced them with two nice multi-turn linear potentiometers (yet
+    another reason the chassis needed a redesign)</p>
+<p>Second problem I noticed: It&#8217;s all wrong!<br/>
+By <em>probably</em> misinterpreting what a teacher told me, but <em>surely</em> forgetting basic OpAmp theory, I
+designed the Amplification+Offset stage like so.</p>
+<p>An OpAmp usign negative feedback basically tries to modify it&#8217;s output so that the different between
+the <em>inverting</em> (-) and <em>non inverting input</em> (+) is 0. By designing the circuit like that I
+basically set the OpAmp in a difference amplifier configuration (and also set myself up for trouble
+    in the reading stages, read down for that)</p>
+<p><img src="/resources/projects/function-gen/amploffset-wrong.png" style="width:60%" /> </p>
+<p>The solution is redesigning the circuit like this instead, basically putting the OpAmp in a
+<em>inverting summer</em> configuration. Since I matched the resistor ratios, the output will be
+${}over{}$.</p>
+<p><img src="/resources/projects/function-gen/amploffset-fix.png" style="width:60%" /> </p>
+<p>I applied this fix by cutting a trace on the PCB and soldering a couple additional 1k resistors,
+  one connecting the potentiometer to the inverting input of the OpAmp, the other connecting the
+  non inverting input to ground. <a href="">Here</a> you can see it somewhat working</a></p>
+<figure class="half">
+<img class="half-img" src="/resources/projects/function-gen/fix1-cuttrace.jpg" style="width:40%" /> 
+<img class="half-img" src="/resources/projects/function-gen/fix1-resistors-arrows.jpg" style="width:40%"/> 
+</figure>
+<p>Do you see the problem with this? There&#8217;s actually two:</p>
+<ul>
+<li><p>Configuring the OpAmp this way, the output is </p>
+<MATH> <mi>(V<msub>in</msub> + V<msub>offset</msub>)*amplification</mi> </MATH>
+<p>while it really should be</p>
+<MATH> <mi>V<sub>in</sub>* amplification + V<sub>offset</sub></mi> </MATH>
+<p>A solution (and
+probably the correct way to achieve this) would be to have separate amplification and
+offset stages, the latter following the former.</p></li>
+<li><p>Using a potentiometer as a voltage divider is not a stiff voltage reference. Moreso given that
+the potentiometer is 100k and the resistors is 1k. As a good rule of thumb for using voltage
+dividers as voltage references, the impedance of the load should be at least an order of
+magnitude (10 times) bigger than the bottom resistor. There are obviously some positions of the
+potentiometer for which this doesn&#8217;t happen, also considering that I have two different circuits
+connected to the same voltage reference by only a low-value resistor.</p></li>
+</ul>
+<h2 id="peak-voltageoffset-reading">Peak voltage&#47;offset reading</h2>
+<p>As said in the <a href="/projects/function-gen.html">original article</a>, the Teensy 3.5 is only
+ever used to pilot the DACs. The UI gets taken care of by a secondary Atmega 32u4, which also reads
+back information (amplitude, dc offset) about the waveform from the respective stage, to display it
+on a LCD screen.</p>
+<p>Obviously these are signals that swing in the range (-12, 12V) and the ADC of the 32u4 only
+tolerates signals in the [0, 5V] range.</p>
+<p>As you will read, both of the problems can easily be solved if I had to separate stages for
+amplification and offset.</p>
+<p>These are the two circuits for (left) offset reading and (right) peak voltage reading. Let&#8217;s start
+with the latter.</p>
+<p><img src="/resources/projects/function-gen/readings-wrong.png" style="width:60%" /> </p>
+<h3 id="peak-voltage">Peak voltage</h3>
+<p>My idea at the time was to:</p>
+<ol>
+<li>Take the final waveform</li>
+<li>Subtract the dc offset from it (which was just added)</li>
+<li>Use a simple diode-capacitor peak-detector</li>
+<li>Scale the output by a factor of 5</li>
+<li>Offset it by 2.5V</li>
+</ol>
+<p>These are really a lot of extra steps for something so simple. And I made the same mistake as
+before (and it won&#8217;t even be the last time in this post)!</p>
+<p>While the idea itself is not so bad (if you don&#8217;t consider the -again- wrong opamp configuration)
+this can be solved more easily.</p>
+<p>At first I tried to fix it using the a non-invering summer configuration for the opamp, and
+decoupling the impedance of the dc offset potentiometer with a voltage follower OpAmp. It worked,
+       but the OpAmps I used had some problems when the signal amplitude got near -12V or 12V.
+       Changing the power supply board and adding 3 more OpAmps (one for each opamp stage that used the
+           dc offset value) is out of the question: I want to keep the fixes simple and
+       contianed within the original PCB as much as possible.
+       Furthermore the output of a given OpAmp in a non-inverting configuration is always &#62;1,
+       which doesn&#8217;t fit my usecase at all</p>
+<p>What worked was instead using a 100nF capacitor after the amplification stage, which blocks
+all dc signals (like the dc offset) and only lets through ac signals (like the waveform). After
+that, the signal can be scaled to be in the [0V, 5V] range with appropriately selected resistors.
+Finally a diode-capacitor peak-detector.</p>
+<p><img src="/resources/projects/function-gen/peakreading-fix.png" style="width:60%" /> </p>
+<p>This works really good, and to implement this fix I only had to rearrange a couple of
+components on the PCB, cut a trace, and change the 32u4 firmware to account for the new resistor values.</p>
+<p>However, the simple diode-capacitor peak-detector cannot detect signals below the diode barrier
+voltage of about 0.4V (I am using a schotky diode). This can be solved by using a peak-detector with
+OpAmps instead, which account for the voltage drop on the diode.</p>
+<h3 id="dc-offset-reading">DC Offset reading</h3>
+<p>The idea is similar to the peak detector and the mistakes were the same:</p>
+<ol>
+<li>Take the dc offset as given by the potentiometer</li>
+<li>Scale it by 1&#47;5</li>
+<li>Offset it by +2.5V</li>
+</ol>
+<p>Since the mistakes are the same as explained before I won&#8217;t repeat myself (wrong configuration +
+    potentiometer is not a stiff voltage reference + resistor values). The problem in this case
+is that I really don&#8217;t have a way to fix it without completely butchering the PCB, so I will leave
+it as non-working.</p>
+<p>In the spirit of trying to salvage something, I tried to understand how this configuration of the
+OpAmp actually works, so that I could at least display a <em>somewhat</em> correct value on the LCD. I
+couldn&#8217;t find anything, but I found <a
+href="https://www.ti.com/lit/an/sboa263a/sboa263a.pdf?ts=1689249348840">this fantastic document by
+Texas Instruments</a>, which explains how
+to use an Opamp to transform a signal in the working range for an ADC. They make the example of
+having a sensor which output a signal in the [-1V, 3V] range and wanting to transform it to the [0V,
+       5V] range for an ADC to use. This is exactly the solution to my problem!</p>
+<p>Again, I unfortunately can&#8217;t implement this as I would have to completely butcher up the PCB, but
+I&#8217;ll keep it mind for the next time!</p>
+<h1 id="bonus-a-new-chassis">Bonus: a new chassis</h1>
+<p>I wanted to try a new technique, a mixup of 3D-Printing and laser-cutting. I worked in Fusion360.</p>
+<ol>
+<li><p>I generated a box with the <a href="https://github.com/PhilippNox/NiceBox-360">NiceBox360
+plugin</a>. This will be laser cut and there are tabbed
+cutouts on the walls so they can snap-fit together.</p></li>
+<li><p>I printed an image of the bottom plate on an A4 sheet of paper. I then placed the components
+on it and marked where the screw holes would have to go. I mesured them with a caliper and brought
+those back into Fusion 360.</p></li>
+<li><p>I made a plate to which I will screw the boards and the transformer. It has little columns
+with screw holes in the places that I marked on the paper. This will be 3D-Printed then glued to the
+bottom wooden plate. The plate is a little offset from the bottom plate so that wires can pass under
+it and air be sucked up by the vent.</p></li>
+<li><p>Finally, I made vent holes on the bottom and on the top, so that the fan (on the top) can draw
+air from the bottom. I cut mounts for the AC power plug on the back, and holes for the BNC
+connector, the encoder, the potentiometers and the LCD screen on the front.</p></li>
+</ol>
+<figure class="half">
+<img class="half-img" src="/resources/projects/function-gen/case1.jpg" style="width:40%" /> 
+<img class="half-img" src="/resources/projects/function-gen/case2.jpg" style="width:40%;"/> 
+<img class="half-img" src="/resources/projects/function-gen/case3.jpg" style="width:40%" /> 
+</figure>
+<figure class="half">
+<img class="half-img" src="/resources/projects/function-gen/case4.jpg" style="width:40%"/> 
+<img class="half-img" src="/resources/projects/function-gen/case5.jpg" style="width:40%"/> 
+<img class="half-img" src="/resources/projects/function-gen/case6.jpg" style="width:40%"/> 
+</figure>
+<figure class="half">
+<img class="half-img" src="/resources/projects/function-gen/case7.jpg" style="width:40%" /> 
+<img class="half-img" src="/resources/projects/function-gen/case8.jpg" style="width:40%"/> 
+</figure>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>
