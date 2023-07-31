@@ -1,8 +1,10 @@
 title: Quickie - Printrboard USB connection failure
 
+# Quickie - Printrboard USB connection failure
+
 This is a quick one. Some time ago I found a broken Printrbot Simple Maker's Kit at the FabLab. This
 is a 3D-Printer Kit from the early days of RepRap. The structure is made of laser-cut wood sheets
-kept together with screws and nuts. It has a small $10cm^3$print area, but it's a nice little
+kept together with screws and nuts. It has a small 10cm^3 print area, but it's a nice little
 machine overall. It doesn't have an lcd screen, and prints must be sent via USB. It does a SD Card
 slot though.
 

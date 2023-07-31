@@ -171,8 +171,13 @@ header {
 	overflow: auto;
 }
 
+figure {
+    display: block;
+    text-align: center;
+}
 /*IMAGES*/
 img {
+	display: block;
 	width: 90%;
 	margin-left: auto;
 	margin-right: auto;
@@ -193,3 +198,12 @@ img {
   display:block
 }
 
+.halfimg-rotate180 img {
+   display:inline;
+  transform: rotate(180deg);
+}
+
+.halfimg-rotate90 img {
+   display:inline;
+  transform: rotate(90deg);
+}

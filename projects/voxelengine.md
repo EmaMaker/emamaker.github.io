@@ -32,8 +32,8 @@ But there were still some problems with this: the *Cell* generated six different
 100fps on my Dell XPS M1330, which now is a 12-years-old laptop.
 But when it came to generate new parts of the world, the Java Garbage Collector started crying for all the mess it had to clean.
 
-<img src="/resources/projects/voxel-engine-1/voxelengine1-3.jpg" /> 
-<img src="/resources/projects/voxel-engine-1/voxelengine1-4.jpg" /> 
+<img class="img-side-by-side" src="/resources/projects/voxel-engine-1/voxelengine1-3.jpg" /> 
+<img class="img-side-by-side" src="/resources/projects/voxel-engine-1/voxelengine1-4.jpg" /> 
 
 ## Greedy Meshing to overcome perfomance issues
 
@@ -42,7 +42,7 @@ I didn't really understand the maths that 0fps did, as I'm still in high school 
 
 <img src="/resources/projects/voxel-engine-1/voxelengine1-5.jpg" /> 
 
-<h4> This is a wirefram of a chunk mesh generated with greedy meshing </h4>
+<h4> This is a wireframe of a chunk mesh generated with greedy meshing </h4>
 
 
 ## Smooth world generation using Simplex Noise
