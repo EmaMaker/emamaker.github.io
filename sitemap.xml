@@ -9,6 +9,7 @@
 	<url><loc>/projects/index.html</loc></url>
 	<url><loc>/projects/spqr.html</loc></url>
 	<url><loc>/notes/voxel.html</loc></url>
+	<url><loc>/projects/sda5708.html</loc></url>
 	<url><loc>/projects/function-gen-fix.html</loc></url>
 	<url><loc>/projects/function-gen.html</loc></url>
 	<url><loc>/misc/printrbot-usb.html</loc></url>
@@ -43,6 +44,7 @@
 </urlset>
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url><loc>/projects/sda5708.html</loc></url>
 	<url><loc>/projects/function-gen-fix.html</loc></url>
 	<url><loc>/projects/function-gen.html</loc></url>
 	<url><loc>/misc/printrbot-usb.html</loc></url>

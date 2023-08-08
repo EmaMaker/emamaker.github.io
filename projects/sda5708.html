@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Driving a SDA5708 LED Matrix Display with Raspberry Pi Pico</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+<h1 id="driving-a-sda5708-led-matrix-display-with-raspberry-pi-pico">Driving a SDA5708 LED Matrix Display with Raspberry Pi Pico</h1>
+<p>I got my hands on a Siemens SDA5708 Display from an old Nokia satelite receiver. The Display is composed of
+8 digits, each made of a 7-rows-by-5-columns LED Matrix. I looked it up on the internet and found
+<a href="https://www.sbprojects.net/knowledge/footprints/sda5708/index.php">these</a> <a href="https://os.mbed.com/components/SDA5708-8-digit-LED-matrix-display/">two</a> articles.
+I couldn&#8217;t find a proper datasheet, but the first article gave enough explanation of how the display
+worked, while the second suggested to use the SPI protocol to drive the display.</p>
+<p>I decided this would be a nice project to use my Raspberry Pi Pico, which I bought on release a couple
+of years ago but never got around to do anything with.</p>
+<h2 id="the-display">The Display</h2>
+<p>The SB-Projects article does a really good job at explaining how the display works, but let me
+summarize.<br>
+It has 6 pins, 2 of which for VCC (pin 1) and GND (pin 6), the middle ones used for Chip
+Select (pin 2), Data (pin 3), Clock (pin 4) and Reset (pin 5). The Data pin is also called MOSI
+(Master Out - Slave In) which is the pin that the Master (in this case, the Pico) uses to send data
+to the Slave (in the case, the Display). The Pico pinout calls this pin SPI TX.<br>
+SPI usually also has a MISO pin (Master In - Slave Out) used for the Slave (display) to send data to
+the Master (Pico). The Pico pinout calls this pin SPI RX. However, the display does not send any
+data back to the controller, so there&#8217;s no need to wire it.</p>
+<p>It also has three registers: one Control Register, one Access Register and one Column Data Register.</p>
+<ul>
+<li>The first controls the state of the display: it takes care of setting the brightness, limiting the maximum current to the
+LEDs and clearing the display. It also always starts with two 1s.</li>
+<li>The Access Register controls which digit is being targeted. It always starts with the sequence 10100. The access register also resets the column data pointer.</li>
+<li>The Column Data Register writes the bit patterns to the digit set by the Access Register. It needs
+7 consecutive bytes, one for row. Starting from Row 0, each byte writes a single row. They always start with three 0s.
+This also means that the font used by the display is completely defined in software, by shaping the
+bits in each row byte.</li>
+</ul>
+<h2 id="driving-the-display">Driving the display</h2>
+<p>After setting up the environment and the C SDK, I started studying the SPI example program. From
+that, I started writing my own C program. I soon found out a little quirk of the display: <ins>the bytes needed to be sent in
+reverse order, meaning with the Least Significant Bit must be sent first</ins>.</p>
+<p>At first I though it might be something to do with the endianess of the RP2040 (the microcontroller
+    on the Pico), but it didn&#8217;t really make much sense. I then came across <a
+href="https://arduinotehniq.blogspot.com/2015/07/sda5708-display-8-character-7x5-dot.html">this
+article</a>, pointing to <a
+href="https://github.com/tehniq3/SDA5708/blob/master/SDA5708_DHT22_ceas_simplu.ino">this github
+project</a> which also was sending the bytes backwards, so it isn&#8217;t something on my end and must be
+something on the display&#8217;s end. It kinda remained a mistery for me, and thought there was some
+missing information in the SB-Project article, until I re-read it while writing this post, and
+noticed this line</p>
+<pre><code>The least significant bit D0 is loaded first. 
+</code></pre>
+<p>which I simply didn&#8217;t notice for like 5 times while reading it originally.</p>
+<p>The need to send the least significant bit first simply means that each byte must be wrote
+backwards. With this, comes the need to reverse a given bit sequence, so that it can be sent in the
+correct way.
+<br>It came easy to use a lookup table to associate each digit (e.g. 0, the first digit) to the corresponding
+identifier (0b111), already reversed to be sent in the correct order (0b111000000). Packets can then
+be crafted by bitwise operations, by ORing the data with the correct header. The same can be applied
+to brightness settings.</p>
+<p>When I got the test script working properly I decided to write a little C library to use the display.
+You can find it <a href="https://git.emamaker.com/EmaMaker/SDA5708-RPi-Pico">here</a> <a
+href="https://github.com/EmaMaker/SDA5708-RPi-Pico">(mirror)</a>.</p>
+<p>It has all the functions to manage the display, which means:</p>
+<ul>
+<li>Setting the brightness</li>
+<li>Limiting the max current (100%, 12.5%)</li>
+<li>Selecting a digit</li>
+<li>Writing a character to a digit</li>
+</ul>
+<p>The repo also bundles a little
+example to show the display capabilities. The library includes a header file that defines a font.
+It took about 1 hour to write the whole library, but took about 1.5 hours to write the font alone!
+(complete with errors and a ton of mirrored letters). That&#8217;s why it only includes the 26 letters of
+the alphabet written in upper-case, and a empty space character. No numbers, no lower-case letters, no
+special character, I was kinda tired at that point. </p>
+<p>So if you want to submit a pull request to add more characters to the front, I&#8217;ll be glad to accept
+it :)</p>
+<p>Here&#8217;s how it looks: I&#8217;ve used a dupont cable to fix it on the breadboard for the photo.</p>
+<p><img src="/resources/projects/sda5708.jpg" /> </p>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>

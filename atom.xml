@@ -68,7 +68,13 @@
 	<link href="https://emamaker.com/atom.xml/" rel="self" />
 	<link href="https://emamaker.com/" />
 	<id>https://emamaker.com</id>
-	<updated>2023-07-31T14:05:47+02:00</updated>
+	<updated>2023-08-08T14:20:11+02:00</updated>
+	<entry>
+		<title>Driving a SDA5708 LED Matrix Display with Raspberry Pi Pico</title>
+		<link href="/projects/sda5708.html" />
+		<id>/projects/sda5708.html</id>
+		<updated>2023-08-08 14:18:54.016217057 +0200</updated>
+	</entry>
 	<entry>
 		<title>Fixing my High School Diploma Project</title>
 		<link href="/projects/function-gen-fix.html" />
