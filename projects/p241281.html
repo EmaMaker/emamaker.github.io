@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Driving a Apex P241281 Display with Arduino</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+<h1 id="driving-a-apex-p241281-display-with-arduino">Driving a Apex P241281 Display with Arduino</h1>
+<p>Together with the <a href="/projects/sda5708.html">SDA5708 Display</a> I also got my hands on some of these
+LCD. They were dismantled from some old badge-reading terminals that my dad&#8217;s workplace was
+throwing away and my dad brough home.</p>
+<figure class="half">
+<img class="half-img" src="/resources/projects/p241281/lcd-top.jpg" style="width:45%" /> 
+<img class="half-img" src="/resources/projects/p241281/lcd-bottom.jpg" style="width:45%"/> 
+</figure>
+<p>I actually got my hands on two different variants of this display. The one mentioned in the title,
+  the Apex P241281 and a Data Image PG24121A. The display are mostly equal, the only difference
+  being that the former is backlit by a LED and the former by a classic lamp with a boot converter
+  to drive it.</p>
+<h2 id="figuring-out-the-pinout">Figuring out the pinout</h2>
+<p>I started by looking up what the ICs on the back on the display were. The star of the show is the
+big one
+next to the connector: the Toshiba T6963C is the LCD Controller. <a href="https://www.sparkfun.com/datasheets/LCD/Monochrome/Datasheet-T6963C.pdf">This is the
+datasheet</a>. There&#8217;s also <a href="https://www.lcd-module.de/eng/pdf/zubehoer/t6963.pdf">this
+document</a> from SparkFun with suggestions on how to drive it.</p>
+<p>It seems I only need to drive the D0 to D7 data pins and some control pins like W&#47;R, CE, C&#47;D and a
+couple others. From the PCB it&#8217;s easy to see that these pins are the only one wired to the connector
+that goes back to the main PCB, so it&#8217;s only a matter of checking which pin of the T6963C ends up on
+which pin on the connector itself. One end of the connector is soldered on the PCB, so the quickest
+thing to do was checking which solder point traced back to a pin on the T6963C. However, they are
+on different sides of the board. This was a two-person job: while I held the board vertical and
+one probe on a pin of the controller, my dad probed the solder points on the other side of the PCB
+with the other probe of the multimeter. This is the pinout:</p>
+<table>
+<thead>
+<tr>
+<th>Connector pin</th>
+<th>T6963C pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>PCB &#8220;Ground&#8221;</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Vss (T6963 Ground )</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Vdd</td>
+</tr>
+<tr>
+<td>5</td>
+<td>WR</td>
+</tr>
+<tr>
+<td>6</td>
+<td>RD</td>
+</tr>
+<tr>
+<td>7</td>
+<td>CE</td>
+</tr>
+<tr>
+<td>8</td>
+<td>C&#47;D</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Reset</td>
+</tr>
+<tr>
+<td>11</td>
+<td>D0</td>
+</tr>
+<tr>
+<td>12</td>
+<td>D1</td>
+</tr>
+<tr>
+<td>13</td>
+<td>D2</td>
+</tr>
+<tr>
+<td>14</td>
+<td>D3</td>
+</tr>
+<tr>
+<td>15</td>
+<td>D4</td>
+</tr>
+<tr>
+<td>16</td>
+<td>D5</td>
+</tr>
+<tr>
+<td>17</td>
+<td>D6</td>
+</tr>
+<tr>
+<td>18</td>
+<td>D7</td>
+</tr>
+</tbody>
+</table>
+<p>As you can see from the table, there seem to be two different Grounds for the same PCB. I couldn&#8217;t
+really figure this one out: the pin I call &#8220;PCB Ground&#8221; is connected to the metal part of
+the LCD itself but it not connected to any IC. It&#8217;s not even connected to the backlight
+cathode. I decided to just ignore it and, spoiler alert, the whole thing worked fine without
+it. I haven&#8217;t checked, by I suspect it might have been connected to the Earth of the power supply.</p>
+<p>So, anyway, I wired up the display to an Arduino Mega (which was the one of the three
+microcontrollers with 5V logic I had laying around: that and two Uno&#8217;s) using dupont connectors. It
+was messy to say the least.</p>
+<p>I also found out that this controller is supported by the U8GLib
+library, so I didn&#8217;t need to write <a href="/projects/sda5708.html">another library</a> myself.</p>
+<h2 id="driving-the-display">Driving the display</h2>
+<p>It was simply a matter of using an example script from U8GLib, and wiring the Arduino according to
+the code. </p>
+<p>U8GLib examples are made for a variety of display controllers, and different variants of the
+controller themselves, all you need to do is uncomment the line for your specific one. The T6963C
+comes in different resolutions: 240x128, 240x64, 128x128, 128x64. The resolution
+and font size are set by pulling some pins high or low. This is from the datasheet:</p>
+<p><img src="/resources/projects/p241281/pinfunctions.png" /> </p>
+<p>This is how the pins are on my PCB:</p>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>State</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FS0</td>
+<td>Low</td>
+<td>↓</td>
+</tr>
+<tr>
+<td>FS1</td>
+<td>High</td>
+<td>Font 6x8</td>
+</tr>
+<tr>
+<td>Dual</td>
+<td>High</td>
+<td>Only one screen</td>
+</tr>
+<tr>
+<td>MDS</td>
+<td>High</td>
+<td>↓</td>
+</tr>
+<tr>
+<td>MD0</td>
+<td>Low</td>
+<td>↓</td>
+</tr>
+<tr>
+<td>MD1</td>
+<td>Low</td>
+<td>16 lines, 128 rows</td>
+</tr>
+<tr>
+<td>MD2</td>
+<td>Low</td>
+<td>↓</td>
+</tr>
+<tr>
+<td>MD3</td>
+<td>High</td>
+<td>40 columns</td>
+</tr>
+</tbody>
+</table>
+<p>Pull all of this information together and you get that this display has a resolution of 248x128,
+     using a 6x8 pixels font. So I uncommented the corresponding line in the U8GLib example, which
+     was:</p>
+<pre><code> U8GLIB_T6963_240X128 u8g(8, 9, 10, 11, 4, 5, 6, 7, 14, 15, 17, 18, 16); &#47;&#47; 8Bit Com: D0..D7: 8,9,10,11,4,5,6,7, cs=14, a0=15, wr=17, rd=18, reset=16
+</code></pre>
+<p>I honestly found the comments on the line a bit confusing: what is CS? A0? I haven&#8217;t got those on my
+controller!</p>
+<p><a
+href="https://forum.arduino.cc/t/hookup-guide-240x128-graphic-lcd-module-display-t6963-erm240128syg-2/235594">This
+post on the arduino forum</a> helped me understand better. I guess CS would stand for Chip Select,
+     while CE stands for Chip Enable. Different name, they mean the same thing in this case: while
+     Chip Select&#47;Enable is pulled low, the controller listens for commands from the CPU (in this
+         case, the microcontroller). I can&#8217;t phantom a working acronym that would link A0 and
+     C&#47;D honestly, though.</p>
+<p>The parameters are then be as follows: </p>
+<pre><code>U8GLIB_T6963_240X128 u8g(D0, D1, D2, D3, D4, D5, D6, D7, CE, C&#47;D, WR, RD, RESET)
+</code></pre>
+<h3 id="it-never-works-the-first-try-does-it">It never works the first try, does it?</h3>
+<p>Well, nothing blew up, the wiring seemed correct, yet no image would appear on the display
+whatsoever. At first I though something was wrong in the wiring, maybe a wire not working or an
+interrupted trace in the connector cable, but checking with the oscilloscope everything looked
+right and there were no missing signals.</p>
+<p>I read again <a
+href="https://forum.arduino.cc/t/hookup-guide-240x128-graphic-lcd-module-display-t6963-erm240128syg-2/235594">that
+post</a> and I noticed OP&#8217;s display also had a contrast control pin. Now, <strong>this</strong> seems like a good
+explanation to my problem: too low of a contrast and there is no image! There is not contrast
+control on the T6963C, which means it must be somewhere else.</p>
+<p>I took one of the machines the display was originally connected to, turned it on, and started
+probing the pins of the connector, without having the display actually connected. I noticed two pins
+that were missing from my pinout: pin 4, sitting at about -12V, and pin 19 sitting at 5V. One of
+them could be controlling the contrast. I used an old ATX PC Power supply to get -12V (it is
+actually the same I used for the initial tests of my <a href="!/projects/function-gen-fix.md">function generator</a> -
+I really should make a prober lab bench power supply out of it).</p>
+<p>Lo and behold, the moment I connect -12V to the display, the Hello World text appears on the display.</p>
+<p>Pin 4 does infact control the contrast. The more negative it goes, the more contrast. The
+contents of the display start being visible going a bit lower that -11V, and the image is clear to watch at
+about -12.5V.</p>
+<p>Pin 19 didn&#8217;t seem to have any visibile effect on the display, and it isn&#8217;t actually connected to
+any pin on the controller itself, not even Vdd.</p>
+<p><img src="/resources/projects/p241281/display-messed-up.jpg" style="width:50%"/></p>
+<p>As you can see, though, the image is pretty messed up. This is because U8GLib renders 8x8 pixel
+fonts, and my display is set to use 6x8 fonts. To fix this I need to pull FS1 low, since FS0 already
+is. I did this by cutting the trace that pulled FS1 high at bridging the FS1 and FS0 pin together
+on the T6963C, since FS0 was already wired to ground. Here&#8217;s the before and after:</p>
+<figure class="half">
+<img class="half-img" src="/resources/projects/p241281/t6963-cuttrace-before.jpg" style="width:40%" /> 
+<img class="half-img" src="/resources/projects/p241281/t6963-cuttrace-after.jpg" style="width:40%"/> 
+</figure>
+<p>At this point the image would show up just fine. It is rotated, but that can be changed in software.</p>
+<p><img src="/resources/projects/p241281/display-helloworld.jpg" style="width:50%"/></p>
+<h1 id="making-it-nice">Making it nice</h1>
+<p>Having like fifteen dupont connectors going from the LCD to the arduino is really an atrocious way
+of wiring the two together. I decided to solder the connectors to a little piece of stripboard and
+build a sort of shield that would sit on the arduino, exposing a connector to easily plug and play
+different displays.</p>
+<p>Here it is, alone and on top of the Arduino Mega. I only had a 1-sided stripboard, so I had to make
+do with some strange soldering. It is hard to catch on camera, but there is some space between the
+stripboard and the display header. In that space I could solder the header to the stripboard. I only
+did it on the four corners, though. </p>
+<p>I tried to have the components placed in a sensible way, but I
+somehow ended up the the mirrored version of the optimal placement, so there&#8217;s a lot of wires crossing.</p>
+<figure class="half">
+<img class="half-img" src="/resources/projects/p241281/shield-top.jpg" style="width:30%" /> 
+<img class="half-img" src="/resources/projects/p241281/shield-bottom.jpg" style="width:30%"/> 
+<img class="half-img" src="/resources/projects/p241281/shield-arduino.jpg" style="width:30%"/> 
+</figure>
+<p>The blue wire is the contrast control pin, which is directly connect to -12V on the PSU. I found that -12V was a good
+voltage to set the contrast to.</p>
+<p>Here is a photo of it all together</p>
+<p><img src="/resources/projects/p241281/display-shield.jpg" style="width:50%"/></p>
+<p>Maybe in the future I&#8217;ll make a prober PCB for this shield, including a trimmer for contrast
+control.</p>
+<p>Cheers! :)</p>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>

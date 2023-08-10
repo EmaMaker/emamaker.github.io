@@ -68,7 +68,13 @@
 	<link href="https://emamaker.com/atom.xml/" rel="self" />
 	<link href="https://emamaker.com/" />
 	<id>https://emamaker.com</id>
-	<updated>2023-08-08T14:26:05+02:00</updated>
+	<updated>2023-08-10T14:32:42+02:00</updated>
+	<entry>
+		<title>Driving a Apex P241281 Display with Arduino</title>
+		<link href="/projects/p241281.html" />
+		<id>/projects/p241281.html</id>
+		<updated>2023-08-10 14:32:40.682849130 +0200</updated>
+	</entry>
 	<entry>
 		<title>Driving a SDA5708 LED Matrix Display with Raspberry Pi Pico</title>
 		<link href="/projects/sda5708.html" />
