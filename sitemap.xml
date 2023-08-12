@@ -9,32 +9,24 @@
 	<url><loc>/projects/index.html</loc></url>
 	<url><loc>/projects/spqr.html</loc></url>
 	<url><loc>/notes/voxel.html</loc></url>
+	<url><loc>/events/index.html</loc></url>
+	<url><loc>/projects/dds/index.html</loc></url>
+	<url><loc>/projects/index.html</loc></url>
 	<url><loc>/projects/p241281.html</loc></url>
 	<url><loc>/projects/sda5708.html</loc></url>
-	<url><loc>/projects/function-gen-fix.html</loc></url>
-	<url><loc>/projects/function-gen.html</loc></url>
+	<url><loc>/projects/dds/function-gen-fix.html</loc></url>
+	<url><loc>/projects/dds/function-gen.html</loc></url>
 	<url><loc>/misc/printrbot-usb.html</loc></url>
 	<url><loc>/projects/voxel2/index.html</loc></url>
 	<url><loc>/projects/voxel2/intro.html</loc></url>
 	<url><loc>/projects/voxel2/intro-snippets.html</loc></url>
-	<url><loc>/projects/voxelengine.html</loc></url>
-	<url><loc>/projects/index.html</loc></url>
 	<url><loc>/misc/index.html</loc></url>
 	<url><loc>/misc/strangest-linux-install.html</loc></url>
 	<url><loc>/index.html</loc></url>
 	<url><loc>/notes/index.html</loc></url>
 	<url><loc>/projects/googlemeetbot.html</loc></url>
-	<url><loc>/events/makerfaire2017.html</loc></url>
-	<url><loc>/events/index.html</loc></url>
 	<url><loc>/notes/voxel.html</loc></url>
-	<url><loc>/events/index.html</loc></url>
-	<url><loc>/events/makerfaire2017.html</loc></url>
 	<url><loc>/index.html</loc></url>
-	<url><loc>/notes/index.html</loc></url>
-	<url><loc>/notes/voxel.html</loc></url>
-	<url><loc>/projects/googlemeetbot.html</loc></url>
-	<url><loc>/projects/index.html</loc></url>
-	<url><loc>/projects/voxelengine.html</loc></url>
 	<url><loc>/projects/spqr/index.html</loc></url>
 	<url><loc>/projects/spqr/spqr.html</loc></url>
 	<url><loc>/projects/spqr/year3p2.html</loc></url>
@@ -42,35 +34,29 @@
 	<url><loc>/projects/spqr/year3p1.html</loc></url>
 	<url><loc>/projects/spqr/year2.html</loc></url>
 	<url><loc>/projects/spqr/year1p1.html</loc></url>
+	<url><loc>/projects/voxelengine.html</loc></url>
+	<url><loc>/events/makerfaire2017.html</loc></url>
 </urlset>
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url><loc>/events/index.html</loc></url>
+	<url><loc>/projects/dds/index.html</loc></url>
+	<url><loc>/projects/index.html</loc></url>
 	<url><loc>/projects/p241281.html</loc></url>
 	<url><loc>/projects/sda5708.html</loc></url>
-	<url><loc>/projects/function-gen-fix.html</loc></url>
-	<url><loc>/projects/function-gen.html</loc></url>
+	<url><loc>/projects/dds/function-gen-fix.html</loc></url>
+	<url><loc>/projects/dds/function-gen.html</loc></url>
 	<url><loc>/misc/printrbot-usb.html</loc></url>
 	<url><loc>/projects/voxel2/index.html</loc></url>
 	<url><loc>/projects/voxel2/intro.html</loc></url>
 	<url><loc>/projects/voxel2/intro-snippets.html</loc></url>
-	<url><loc>/projects/voxelengine.html</loc></url>
-	<url><loc>/projects/index.html</loc></url>
 	<url><loc>/misc/index.html</loc></url>
 	<url><loc>/misc/strangest-linux-install.html</loc></url>
 	<url><loc>/index.html</loc></url>
 	<url><loc>/notes/index.html</loc></url>
 	<url><loc>/projects/googlemeetbot.html</loc></url>
-	<url><loc>/events/makerfaire2017.html</loc></url>
-	<url><loc>/events/index.html</loc></url>
 	<url><loc>/notes/voxel.html</loc></url>
-	<url><loc>/events/index.html</loc></url>
-	<url><loc>/events/makerfaire2017.html</loc></url>
 	<url><loc>/index.html</loc></url>
-	<url><loc>/notes/index.html</loc></url>
-	<url><loc>/notes/voxel.html</loc></url>
-	<url><loc>/projects/googlemeetbot.html</loc></url>
-	<url><loc>/projects/index.html</loc></url>
-	<url><loc>/projects/voxelengine.html</loc></url>
 	<url><loc>/projects/spqr/index.html</loc></url>
 	<url><loc>/projects/spqr/spqr.html</loc></url>
 	<url><loc>/projects/spqr/year3p2.html</loc></url>
@@ -78,4 +64,6 @@
 	<url><loc>/projects/spqr/year3p1.html</loc></url>
 	<url><loc>/projects/spqr/year2.html</loc></url>
 	<url><loc>/projects/spqr/year1p1.html</loc></url>
+	<url><loc>/projects/voxelengine.html</loc></url>
+	<url><loc>/events/makerfaire2017.html</loc></url>
 </urlset>
