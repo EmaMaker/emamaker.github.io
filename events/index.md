@@ -1,6 +1,6 @@
-Title: EmaMaker's blog | Events
+title: Events
 
-Report of events I take part in, or simply go to.
+Report of events I attend or I take part in.
 
 
 
