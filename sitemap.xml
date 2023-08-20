@@ -9,6 +9,9 @@
 	<url><loc>/projects/index.html</loc></url>
 	<url><loc>/projects/spqr.html</loc></url>
 	<url><loc>/notes/voxel.html</loc></url>
+	<url><loc>/projects/voxel2/better-meshing.html</loc></url>
+	<url><loc>/notes/voxel-vram.html</loc></url>
+	<url><loc>/index.html</loc></url>
 	<url><loc>/events/index.html</loc></url>
 	<url><loc>/projects/dds/index.html</loc></url>
 	<url><loc>/projects/index.html</loc></url>
@@ -22,7 +25,6 @@
 	<url><loc>/projects/voxel2/intro-snippets.html</loc></url>
 	<url><loc>/misc/index.html</loc></url>
 	<url><loc>/misc/strangest-linux-install.html</loc></url>
-	<url><loc>/index.html</loc></url>
 	<url><loc>/notes/index.html</loc></url>
 	<url><loc>/projects/googlemeetbot.html</loc></url>
 	<url><loc>/notes/voxel.html</loc></url>
@@ -39,6 +41,9 @@
 </urlset>
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url><loc>/projects/voxel2/better-meshing.html</loc></url>
+	<url><loc>/notes/voxel-vram.html</loc></url>
+	<url><loc>/index.html</loc></url>
 	<url><loc>/events/index.html</loc></url>
 	<url><loc>/projects/dds/index.html</loc></url>
 	<url><loc>/projects/index.html</loc></url>
@@ -52,7 +57,6 @@
 	<url><loc>/projects/voxel2/intro-snippets.html</loc></url>
 	<url><loc>/misc/index.html</loc></url>
 	<url><loc>/misc/strangest-linux-install.html</loc></url>
-	<url><loc>/index.html</loc></url>
 	<url><loc>/notes/index.html</loc></url>
 	<url><loc>/projects/googlemeetbot.html</loc></url>
 	<url><loc>/notes/voxel.html</loc></url>

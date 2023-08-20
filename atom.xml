@@ -68,7 +68,25 @@
 	<link href="https://emamaker.com/atom.xml/" rel="self" />
 	<link href="https://emamaker.com/" />
 	<id>https://emamaker.com</id>
-	<updated>2023-08-12T10:12:16+02:00</updated>
+	<updated>2023-08-20T11:53:18+02:00</updated>
+	<entry>
+		<title>Better Mesh Generation for my Voxel Engine</title>
+		<link href="/projects/voxel2/better-meshing.html" />
+		<id>/projects/voxel2/better-meshing.html</id>
+		<updated></updated>
+	</entry>
+	<entry>
+		<title>Notes about Voxel VRAM usage with Geometry Shader</title>
+		<link href="/notes/voxel-vram.html" />
+		<id>/notes/voxel-vram.html</id>
+		<updated></updated>
+	</entry>
+	<entry>
+		<title>EmaMaker&#38;#8217;s Blog</title>
+		<link href="/index.html" />
+		<id>/index.html</id>
+		<updated></updated>
+	</entry>
 	<entry>
 		<title>Events</title>
 		<link href="/events/index.html" />
@@ -145,12 +163,6 @@
 		<title>My strangest Linux install to date</title>
 		<link href="/misc/strangest-linux-install.html" />
 		<id>/misc/strangest-linux-install.html</id>
-		<updated></updated>
-	</entry>
-	<entry>
-		<title>EmaMaker&#38;#8217;s Blog</title>
-		<link href="/index.html" />
-		<id>/index.html</id>
 		<updated></updated>
 	</entry>
 	<entry>

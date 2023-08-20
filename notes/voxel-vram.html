@@ -5,7 +5,7 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Notes</title>
+<title>Notes about Voxel VRAM usage with Geometry Shader</title>
 </head>
 <body>
 <header><center>
@@ -27,13 +27,13 @@ href="https://codeberg.com/emamaker/">Codeberg</a>
 </center>
 </header>
 <article>
-<p>Here you can find a list of notes I take about the ideas I come up with. I take notes directly in markdown, which makes them easy to convert into html to be presented here.</p>
-
-<div id="map">
-<h2 id="Pages">Pages in Notes</h2>
-<p><a href="/notes/voxel-vram.html">2023-08-20 - Notes about Voxel VRAM usage with Geometry Shader</a></p>
-<p><a href="/notes/voxel.html">2023-06-14 - Voxel notes</a></p>
-</div>
+<p><a href="/projects/voxel2/better-meshing.html">Linked to this article</a></p>
+<h1 id="notes-about-voxel-vram-usage-with-geometry-shader">Notes about Voxel VRAM usage with Geometry Shader</h1>
+<p>Standard world (seeds 12345). Camera centered at (512, 80, 512), RENDER<em>DISTANCE=16 CHUNK</em>SIZE=32</p>
+<p>No geometry shader: 82MB</p>
+<p>With geometry shader: 20MB</p>
+<p>With geometry shader + byte for data: 8MB</p>
+<p>On the Radeon HD 6850, using integer data causes a huge drop in performance</p>
 </article>
 
 <footer><p>

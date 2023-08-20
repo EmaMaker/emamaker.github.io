@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Better Mesh Generation for my Voxel Engine</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="/events/index.html">Events</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+<h1 id="better-mesh-generation-for-my-voxel-engine">Better Mesh Generation for my Voxel Engine</h1>
+<p>As I explained in my <a href="/projects/voxel2/intro.md">first post</a> about my voxel engine,
+   a mesh for a chunk is generated using the greedy meshing algorithm, inspired by <a
+   href="https://0fps.net/2012/06/30/meshing-in-a-minecraft-game/">this famous blog post</a> by
+   0fps. <a href="https://github.com/roboleary/GreedyMesh">roboleary</a> ported 0fps&#8217; javascript algorithm to Java, and I ported that
+   to C++.</p>
+<p>Actually in my <a href="/projects/voxelengine.md">old engine</a> I was already using greedy
+   meshing to generate the mesh for every chunk. The implementation was similar, at least in the
+   idea, except that I had 3 different switch-cases to march along the correct direction for
+   every face. I just find 0fps&#47;roboleary&#8217;s implementation much more elegant than mine. I know I
+   could fix it, but still, when I started working on the engine I just wanted to get this part
+   running quickly, so that I could experiment with other stuff like multithreading,
+   this article, and nicer world generation (more interesting terrain features, decorations -
+       which are the argument of an upcoming article, biomes&#8230;)</p>
+<h2 id="whats-wrong-with-greedy-meshing">What&#8217;s wrong with Greedy Meshing?</h2>
+<p>Well nothing, almost. Not in the algorithm itself at least. The problem is how I move data from
+the CPU, which executes the meshing algorithm, to the GPU, which puts the pixels on the screen.</p>
+<p>Currently, for every vertex of the mesh I send:</p>
+<ul>
+<li>3 floats for position</li>
+<li>3 floats for normals</li>
+<li>3 floats for texture</li>
+</ul>
+<p>So a float is 4 bytes, which adds up to 3*3*4=36 bytes <strong>for each VERTEX</strong>. That&#8217;s an awful
+lot of data for a single vertex.</p>
+<p>Now, in my quest to learn OpenGL I read pretty early about <a href="https://www.khronos.org/opengl/wiki/Geometry_Shader">Geometry Shaders</a>.
+Those are pretty cool: they execute after the vertex shader, take as input a set of
+vertices and output multiple vertices, manipulated as we wish, packed into a <a
+href="https://www.khronos.org/opengl/wiki/Primitive">primitive</a>.</p>
+<p>I thought I can use a geometry shader to optimize my greedy meshing routine. Since I&#8217;m
+making a cubical voxel engine, ultimately we 
+want the meshing stage to output the quads that make up the faces of the cubes (most probably
+    multiple cubes merged together). But generating
+whole quads on the CPU is really a waste of resources, especially memory, and is also wasting
+bandwidth between the CPU and the GPU.</p>
+<p>Now, we can generate a single point on the CPU, representing the whole quad that would be
+generated instead, which carries the following information:</p>
+<ul>
+<li>3 floats for bottom-left position</li>
+<li>3 floats for <em>extents</em>. In other words, the size of the quad.</li>
+<li>1 float for the block type</li>
+<li>1 boolean for <em>back face</em>. This represents which side on the same axis the quad is on
+(right&#47;left, top&#47;bottom, from&#47;back)</li>
+</ul>
+<p>I call the set of these a <em>cloud of points</em>.</p>
+<p>Ultimately it&#8217;s almost the same amount of data <em>per element of the array</em>, but I&#8217;m sending 4
+times less data, since an element of the <em>cloud</em> represents a whole quad, while previously an
+element of the arrays that were sent to the GPU represented a single vertex (of which four are
+    needed to make a quad).</p>
+<p>All the vertices of the quad have the same normal, which can be calculated from the <em>extents</em>
+vector. One and only one element of this vector is zero: this represents which axis the quad
+is on. Combined with the <em>backface</em> element, it can be used to determine the normal of the
+vertex. This is done in the vertex shader, and sent to the geometry shader. The <em>extent</em> vector
+is also used to determine the texture coordinate of each vertex during the geometry
+shader.</p>
+<h2 id="the-geometry-shader-itself">The Geometry Shader itself</h2>
+<p>It&#8217;s up to the geometry shader generate the new vertices. It also comes with a little added
+benefit: if we get the order in which to output the vertices right, we can output a
+triangle_strip primitive. A triangle strip is just like a triangle, except it doesn&#8217;t need a
+separate indices array to order the vertices: in a triangle strip any 3 consecutive vertices make a triangle. This
+could also be implemented on the CPU, but I only discovered them when working on this :) .</p>
+<p>After the cloud of points is sent to the GS, together with the calculated normal for each
+vertex, the GS procedes to generate new vertices in the order shown below. It&#8217;s this order that
+guarantees that a triangle_strip is generated.</p>
+<p>In a GS, a new vertex is created by calling <code>EmitVertex()</code>. After all vertices have been
+created, the primitive is closed my calling <code>EndPrimitive()</code>. Any data about the vertex
+(including data that needs to be sent from
+the geometry shader to the fragment shader) must be set before calling <code>EmitVertex()</code></p>
+<p>Let&#8217;s breakdown the GS:</p>
+<ol>
+<li><p>Setup inputs and outputs.</p>
+<pre><code>layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+in VS_OUT{
+vec3 Extents;
+vec3 Normal;
+float BlockType;
+} gs_in[];
+
+out vec3 TexCoord;
+out vec3 Normal;
+out vec3 FragPos;
+
+uniform mat4 view;
+uniform mat4 projection;
+
+</code></pre></li>
+</ol>
+<p>Most of the variables are self-explaining. TexCoord is the texture coordinates (<a
+    href="/projects/voxel2/intro.html">remember, they are 3d</a>) and FragPos is the position
+of the fragment in world coordinates, used for lighting calculations in the fragment
+shader.</p>
+<p>Also note that each vertex needs to be translated in its position as
+seen by the camera, so it needs to be multiplied by the view and projection matrices. This
+was previously done in the vertex shader, but now needs to be done for each vertex before
+emitting it.</p>
+<ol start="2">
+<li><p>Entering the <code>main()</code> we start emitting vertices</p>
+<pre><code>Normal = gs_in[0].Normal;
+
+TexCoord = vec3(0.0, 0.0, gs_in[0].BlockType);
+gl_Position = gl_in[0].gl_Position;
+FragPos = vec3(gl_Position);
+gl_Position = projection * view * gl_Position;
+EmitVertex();
+</code></pre></li>
+</ol>
+<p>The normal is the same for every vertex, so it only needs to be set once at the start. The
+first vertex is bottom-left, which corresponds to the position vector (<code>gl_in[0].gl_Position</code>).
+Vertices between the vertex and the geometry shader are always passed as arrays, even if there&#8217;s
+just one vertex like in our case</p>
+<ol start="3">
+<li><p>Now we have to procede based on which axes the quad is parallel to: the quad is parallel to
+the axes whose extent is not 0. This can be checked with an
+if statement.</p>
+<pre><code>if(gs_in[0].Extents.x == 0){
+...
+}else if(gs_in.Extents.y == 0) {
+...
+}else{
+...
+}
+</code></pre>
+<p>The bodies of the statements are pretty similar, only the exact values change. Let&#8217;s examine a quad parallel to the y and z axes</p>
+<ol start="4">
+<li>Emit second (bottom-right) vertex</li>
+</ol>
+<pre><code>TexCoord = vec3(0.0, gs_in[0].Extents.z, gs_in[0].BlockType);
+gl_Position = gl_in[0].gl_Position + vec4(0.0, 0.0, gs_in[0].Extents.z, 0.0);
+FragPos = vec3(gl_Position);
+gl_Position = projection * view * gl_Position;
+EmitVertex();
+</code></pre></li>
+</ol>
+<p>Again, pretty similar to the first one.</p>
+<ol start="5">
+<li><p>And so is the third (top-left) one</p>
+<pre><code>TexCoord = vec3(gs_in[0].Extents.y, 0.0,  gs_in[0].BlockType);
+gl_Position = gl_in[0].gl_Position + vec4(0.0, gs_in[0].Extents.y, 0.0, 0.0);
+FragPos = vec3(gl_Position);
+gl_Position = projection * view * gl_Position;
+EmitVertex();
+</code></pre></li>
+<li><p>After the third vertex, and still in the if statement body, we set the texture coordinate for
+the fourth vertex</p>
+<pre><code>TexCoord = vec3(gs_in[0].Extents.y, gs_in[0].Extents.z,  gs_in[0].BlockType);
+</code></pre></li>
+<li><p>The fourth and last vertex (top-right) is independent of axes, because it&#8217;s always at
+<em>position</em>+<em>extent</em>. Its TexCoord is not however, and has been set before in the if statement
+body.</p>
+<pre><code>gl_Position = gl_in[0].gl_Position + vec4(gs_in[0].Extents, 0.0);
+FragPos = vec3(gl_Position);
+gl_Position = projection * view * gl_Position;
+EmitVertex();
+</code></pre></li>
+<li><p>And finally</p>
+<pre><code>EndPrimitive();
+</code></pre></li>
+</ol>
+<p>This order of emitting vertices guarantees a working triangle_strip. However, it has the downside
+of not respecting the vertex order for face culling anymore, so I disabled it for the moment. It
+could be re-enabled by using another switch case to check the normal of the vertices and
+eventually emitting them in reverse order.</p>
+<h2 id="why-floats">Why floats?</h2>
+<p>Using integers would save up a lot more memory on both the CPU and the GPU. Since a chunk is set
+to be 32 blocks wide, neither the <em>position</em> nor the <em>extents</em> vector can ever go past the value
+31: a byte will be more that sufficient to express it, instead of the 4 bytes always required
+by a float. With some bitwise operations, it
+could be compressed even further.</p>
+<p>Too bad that GPUs <strong>SUCK</strong> at integer calculations!</p>
+<p>Nah, that&#8217;s not actually true, at least not for modern GPUs.</p>
+<p>I&#8217;ve never posted on about my
+desktop computer, but the gist of it is that I built it during the high of the GPU
+shortage of 2020 and got no GPU for it. So I bought a used AMD Radeon HD6850, which is now more a
+than 10 years old GPU, with the intent to have a dual GPU setup in the future and pass one GPU to a Windows 10
+machine to do CAD work. Some time later I bought a NVIDIA Tesla M40. This is a server GPU, basically
+a Titan X Maxwell from 2015, except with a cooler that makes absolutely no sense for a
+desktop computer (which makes keeping it from overheating a challenge) and no video output. So I kept the HD6850 to have a video output, while
+offloading the heavy calculations to the Tesla M40 with <a
+href="https://wiki.archlinux.org/title/PRIME">PRIME</a>.</p>
+<p>Where was I? Oh right, GPUs suck at integer calculations, or at least old ones do. My Radeon HD
+6850 is indeed an old GPU: it was released in 2010. My Tesla is somewhat newer -still a bit
+old- but was an enterprise-grade GPU when it got out. And due to the nature of my setup, I can test the engine on both GPUs.</p>
+<p>The morale of the story is that I did try using (unsigned) integers instead of floats. While the M40 didn&#8217;t
+break a sweat, the HD6850 was literally chocking. Frametimes more than decupled, with framerate
+dipping
+below 15 FPS as soon as more than a handful of chunks had to be rendered.</p>
+<p>Since I aim to keep
+compatibility with older hardware as much as possible (this engine runs at about 80FPS at 8
+    chunks render distance on my ancient Dell M1330, released in a 2008 with a whopping
+    Intel Core 2 Duo T7000 and a NVIDIA Gefore 7800GS) I decided against the
+transition to integers to express mesh data, even if it meant giving up a big decrease in RAM
+and VRAM usage.</p>
+<h1 id="conclusions">Conclusions</h1>
+<p>The reason I decided to introduce a Geometry Shader was to see if I could reduce the VRAM usage,
+    and if so, by how much. Reducing VRAM usage means that I can make the world generation more
+    interesting (i.e. more detailed terrain, decorations like trees) without wasting
+    resources.</p>
+<p>Here&#8217;s a table of the VRAM usage with after the introduction of the Geometry Shader in
+meshing. Tests are done in my standard world, you can <a
+href="/notes/voxel-vram.html">check the notes</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>VRAM usage (MB)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No Geometry Shader (old)</td>
+<td>82</td>
+</tr>
+<tr>
+<td>With Geometry Shader</td>
+<td>20</td>
+</tr>
+<tr>
+<td>With Geometry Shader + integers instead of floats</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p>Reducing the amount of data that has to be sent from the CPU to the GPU has also the collateral
+effect of reducing RAM usage on the CPU, which was only partially a problem because mesh
+data was cleared as soon as it was sent to the GPU, but it still required a lot of operations
+to grow the heap to fit the data, only for it to be flushed afterwards.</p>
+<p>Source code is available on <a
+href="https://git.emamaker.com/emamaker/voxel-engine">Gitea</a> <a
+href="https://github.com/emamaker/voxel-engine">(GitHub mirror)</a> <a
+href="https://codeberg.org/emamaker/voxel-engine">(Codeberg mirror)</a></p>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>
