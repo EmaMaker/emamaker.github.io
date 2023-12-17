@@ -68,17 +68,23 @@
 	<link href="https://emamaker.com/atom.xml/" rel="self" />
 	<link href="https://emamaker.com/" />
 	<id>https://emamaker.com</id>
-	<updated>2023-08-20T11:53:18+02:00</updated>
+	<updated>2023-12-17T14:32:23+01:00</updated>
 	<entry>
-		<title>Better Mesh Generation for my Voxel Engine</title>
-		<link href="/projects/voxel2/better-meshing.html" />
-		<id>/projects/voxel2/better-meshing.html</id>
+		<title>Generating Trees | Voxel Engine #3</title>
+		<link href="/projects/voxel2/trees.html" />
+		<id>/projects/voxel2/trees.html</id>
 		<updated></updated>
 	</entry>
 	<entry>
 		<title>Notes about Voxel VRAM usage with Geometry Shader</title>
 		<link href="/notes/voxel-vram.html" />
 		<id>/notes/voxel-vram.html</id>
+		<updated></updated>
+	</entry>
+	<entry>
+		<title>Meshing using Geometry Shader | Voxel Engine #2</title>
+		<link href="/projects/voxel2/better-meshing.html" />
+		<id>/projects/voxel2/better-meshing.html</id>
 		<updated></updated>
 	</entry>
 	<entry>
@@ -142,7 +148,7 @@
 		<updated></updated>
 	</entry>
 	<entry>
-		<title>Voxel Engine (again)</title>
+		<title>Voxel Engine (again) | Voxel Engine #1</title>
 		<link href="/projects/voxel2/intro.html" />
 		<id>/projects/voxel2/intro.html</id>
 		<updated></updated>

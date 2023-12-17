@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Generating Trees | Voxel Engine #3</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="/events/index.html">Events</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+<h1 id="generating-trees-voxel-engine-3">Generating Trees | Voxel Engine #3</h1>
+<p>The world looks quite bland at the moment, let&#8217;s add some trees!</p>
+<p>First, let&#8217;s recap how world generation currently works, then we&#8217;ll see how to add trees in a way
+    that makes sense.</p>
+<h2 id="current-world-gen">Current world gen</h2>
+<p>As I wrote in the <a href="/projects/voxel2/intro.html">intro</a>, I&#8217;m trying to keep the chunk generation
+algorithm context-free for as much as I can. I already know this won&#8217;t work if I ever want to add
+more complex structures, but I&#8217;m not planning for it anytime soon. But if I ever wanna do that, I
+might switch to <a href="add%20links">something layer based</a>.</p>
+<p>Also recall that blocks in a chunk are stored in an interval map, which is a tree-based data
+structure that performs lossless compression, basically run-length encoding. The current chunk
+generation algorithm takes advantage of the data structure, by iterating through the chunk in the same
+order as blocks will be indexed in the interval map, to take advantage of its
+compression properties. Specifically, the blocks are indexed to form a
+a Hilbert curve, which is a particular type of space-filling curve. This means that the chunks are
+not necessarly (actually, more often than not) iterated following a particular cartesian axis.
+A noise value, calculated using Open Simplex Noise is calculated at every <code>(x,z)</code> coordinate. As an
+optimization, noise values are calculated only once per coordinate and help in lookup tables:</p>
+<ul>
+<li><code>grassNoiseLUT</code> stores the surface level.</li>
+<li><code>dirtNoiseLUT</code> stores how many DIRT blocks there are below surface level</li>
+<li>Everything between 0 and <code>grassNoiseLUT(x,z)-dirtNoiseLUT(x,z)</code> is set to STONE</li>
+<li>Everything above <code>grassNoiseLUT</code> is set to AIR</li>
+</ul>
+<p>Now, on top of this system, we need to add tree generation. At first it might seem easy: just add
+another lookup table, vary the tree trunk height using noise and call it a day. This is correct,
+    however it poses some problems, first of which is that trees without leaves are kinda sad.</p>
+<h2 id="tree-trunks">Tree trunks</h2>
+<p>While the solution I just proposed works, it just <em>kinda</em> works. Let&#8217;s put leaves aside for now and
+concentrate on tree trunks first.</p>
+<p>The first problem to arise is that using OpenSimplexNoise does not allow us to decide <em>where</em> to place a trunk either, we can just sample
+noise at a point and place a trunk if it is over a given threshold. And OpenSimplexNoise is
+a <em>slow</em>. While we could ignore slowness, the fact that we cannot decide where to place a trunk
+means that we have no way to avoid generating two adjacent trunks. If
+    you squint your eyes just a little bit, you can notice a lot in this screenshot.</p>
+<p><img alt="Lots of adjacent tree trunks" src="/resources/projects/voxel2/trees-adjacent.png"/> </p>
+<p>I couldn&#8217;t find a solution to this problem will keeping to use noise. Probably there is one, but I
+guess finding it is just not worth the hassle.</p>
+<p>What I decided to do is instead section up the world in <em>cells</em>. Those are different from chunks, in
+that they divide the world just in 2d (x,z) and not in 3d (x,y,z). Also they have different dimensions
+(but are still square),
+     such that a single chunk may be spanned by multiple cells (or viceversa).
+     We impose that at most one tree may be generated <em>per cell</em>, maybe
+     with some offset to avoid having them appearing like a grid of points. Note that when adding an
+     offset from the center, the maximum offset must be strictly less than half of the side of the cell, again to
+     avoid having two adjacent trunks.</p>
+<p>At this point, for every <code>(x,z)</code> point we can check which tree cell it falls into and compute the <code>x</code>
+and <code>z</code> chunk coordinates at which a tree trunk shall be placed for said cell. Offsets and trunk height can be
+generated pseudo-randomly or using noise, as long as the function stays deterministic (that is to
+    say, at same inputs should always correspond the same output). Here&#8217;s how I do it:</p>
+<pre><code>#define LEAVES_RADIUS 3
+#define WOOD_CELL_SIZE 13
+#define WOOD_CELL_CENTER 7
+#define TREE_STANDARD_HEIGHT 7
+#define TREE_HEIGHT_VARIATION 2
+#define WOOD_CELL_BORDER (LEAVES_RADIUS-1)
+#define WOOD_MAX_OFFSET (WOOD_CELL_SIZE-WOOD_CELL_CENTER-WOOD_CELL_BORDER)
+
+const int TREE_MASTER_SEED_X = mt();
+const int TREE_MASTER_SEED_Z = mt();
+struct TreeCellInfo evaluateTreeCell(int wcx, int wcz){
+    int anglex = TREE_MASTER_SEED_X*wcx+TREE_MASTER_SEED_Z*wcz;
+    int anglez = TREE_MASTER_SEED_Z*wcz+TREE_MASTER_SEED_X*wcx;
+
+    &#47;&#47; Start at the center of the cell, with a bit of random offset
+    int wcx_off = WOOD_CELL_CENTER + WOOD_MAX_OFFSET * sines[anglex % 360];
+    int wcz_off = WOOD_CELL_CENTER + WOOD_MAX_OFFSET * cosines[anglez % 360];
+
+    struct TreeCellInfo result{};
+
+    &#47;&#47; Cell to world coordinates
+    result.trunk_x = wcx * WOOD_CELL_SIZE + wcx_off;
+    result.trunk_z = wcz * WOOD_CELL_SIZE + wcz_off;
+
+    result.trunk_x_offset = wcx_off;
+    result.trunk_z_offset = wcz_off;
+
+    return result;
+}
+
+</code></pre>
+<p>Offsets are determined using a simple function of the coordinates and some random seeds, then taking
+the sine and cosine. The idea is that the numbers will be random enough (from the seeds) at that
+they will at least be out of phase with each each other (by taking the sine and the cosine
+respectevely) such that trunks won&#8217;t always be generated along the diagonals of a cell.</p>
+<p>All these results are held in a dedicated struct:</p>
+<pre><code>&#47;&#47; Info on the tree cell to generate
+struct TreeCellInfo{
+    &#47;&#47; Cell coordinates (in "tree cell space")
+    int wcx, wcz;
+    &#47;&#47; trunk offset from 0,0 in the cell
+    int trunk_x_offset, trunk_z_offset;
+    &#47;&#47; Global x,z position of the trunk
+    int trunk_x, trunk_z;
+};
+</code></pre>
+<p>and then saved into a lookup table, which is evaluated at the start of generation, for each chunk.
+This is done as an optimization, and speeds things up sensibly (I haven&#8217;t taken any measurement, but
+    the difference could be easily felt by eye even on my Ryzen7 3700X&#47;RTX 3060 desktop).</p>
+<pre><code>std::array&#60;TreeCellInfo, TREE_LUT_SIZE*TREE_LUT_SIZE&#62; treeLUT;
+
+&#47;&#47; Tree LUT
+int tree_lut_x_offset = cx &#47; WOOD_CELL_SIZE - 1;
+int tree_lut_z_offset = cz &#47; WOOD_CELL_SIZE - 1;
+
+for(int i = 0; i &#60; TREE_LUT_SIZE; i++)
+    for(int k = 0; k &#60; TREE_LUT_SIZE; k++){
+    int wcx = (tree_lut_x_offset + i);
+    int wcz = (tree_lut_z_offset + k);
+    treeLUT[i * TREE_LUT_SIZE + k] = evaluateTreeCell(wcx, wcz);
+    }
+
+</code></pre>
+<p>Now when iterating on a block we look up the corresponding cell in the table. If the cell says that
+the current block coordinates are also the coordinates of its tree trunk (and <code>y &#62;= surface_level &#38;&#38;
+    y &#60;= trunk_height</code>) we set the current block as WOOD.</p>
+<p>Now you can see that there are no adjacent trees</p>
+<p><img alt="Lots of adjacent tree trunks" src="/resources/projects/voxel2/trees-nonadjacent.png"/> </p>
+<h2 id="leaves">Leaves</h2>
+<p>Those are tricky! But luckily, we already did most of the heavy lifting computing trunks.</p>
+<p>The problem with leaves is that <em>somehow</em>, when trying to place a leaf block, we need to reference
+the position and the height of the trunk it is attached to. It&#8217;s unfeasable to let every single leaf
+block being placed check a radius of <code>LEAVES_RADIUS</code> and look for a trunk which may or may not be
+its origin.</p>
+<p>Luckily we have a lookup table which we can reference. When iterating a block, we check which tree
+cell it corresponds to. By referencing the <code>TreeCell</code> lookup table, we know where the trunk is in
+global coordinates and how tall it is, so that we can start placing leaves from the uppermost block
+of the trunk. We can add this information into the struct.</p>
+<pre><code>&#47;&#47; Info on the tree cell to generate
+struct TreeCellInfo{
+    &#47;&#47; Cell coordinates (in "tree cell space")
+    int wcx, wcz;
+    &#47;&#47; trunk offset from 0,0 in the cell
+    int trunk_x_offset, trunk_z_offset;
+    &#47;&#47; Global x,z position of the trunk
+    int trunk_x, trunk_z;
+    &#47;&#47; Y of the center of the leaves sphere
+    int leaves_y_pos;
+};
+
+&#47;&#47; Tree cell Info
+const int TREE_MASTER_SEED_X = mt();
+const int TREE_MASTER_SEED_Z = mt();
+struct TreeCellInfo evaluateTreeCell(int wcx, int wcz){
+    int anglex = TREE_MASTER_SEED_X*wcx+TREE_MASTER_SEED_Z*wcz;
+    int anglez = TREE_MASTER_SEED_Z*wcz+TREE_MASTER_SEED_X*wcx;
+
+    &#47;&#47; Start at the center of the cell, with a bit of random offset
+    int wcx_off = WOOD_CELL_CENTER + WOOD_MAX_OFFSET * sines[anglex % 360];
+    int wcz_off = WOOD_CELL_CENTER + WOOD_MAX_OFFSET * cosines[anglez % 360];
+
+    struct TreeCellInfo result{};
+
+    &#47;&#47; Cell to world coordinates
+    result.trunk_x = wcx * WOOD_CELL_SIZE + wcx_off;
+    result.trunk_z = wcz * WOOD_CELL_SIZE + wcz_off;
+
+    result.trunk_x_offset = wcx_off;
+    result.trunk_z_offset = wcz_off;
+
+    int height_variation = 2 * sines[anglez % 180];
+    &#47;&#47; one block above the trunk + grass
+    &#47;&#47; trunk base (grass block position) needs to be recomputed in case of checking a cell that
+    &#47;&#47; does not correspond to the current chunk
+    result.leaves_y_pos = 1 + height_variation + TREE_STANDARD_HEIGHT + evaluateGrass(result.trunk_x,
+        result.trunk_z);
+
+    return result;
+}
+</code></pre>
+<p>From here, we can use some basic distance functions to make the leaves have different
+patterns. For example, this one generates leaves in a sphere around the trunk.</p>
+<pre><code>&#47;&#47; Divide the world into cells, each with exactly one tree, so that no two trees will be adjacent of each other
+struct TreeCellInfo info;
+int wcx = (int)(x &#47; WOOD_CELL_SIZE) - tree_lut_x_offset; &#47;&#47; wood cell x
+int wcz = (int)(z &#47; WOOD_CELL_SIZE) - tree_lut_z_offset; &#47;&#47; wood cell z
+
+&#47;&#47; Retrieve info on the cell from LUT
+info = treeLUT[wcx * TREE_LUT_SIZE + wcz];
+
+&#47;&#47; A tree is to be placed in this position if the coordinates are those of the tree of the current cell
+bool wood = x == info.trunk_x &#38;&#38; z == info.trunk_z &#38;&#38; y &#62; grassNoiseLUT[lut_index] &#38;&#38; y &#60;= info.leaves_y_pos;
+bool leaf{false};
+
+&#47;&#47; Check placing of leaves
+
+&#47;&#47; Place leaves on top of trunk
+if(wood) leaf = y &#62; info.leaves_y_pos &#38;&#38; y &#60; info.leaves_y_pos+LEAVES_RADIUS;
+else{
+    &#47;&#47; Place leaves around trunk
+    if(!leaf) leaf = utils::withinDistance(x,y,z, info.trunk_x, info.leaves_y_pos, info.trunk_z, LEAVES_RADIUS);
+
+    &#47;&#47; Eventually search neighboring cells for trunks
+    if(!leaf &#38;&#38; wcx+1 &#60; TREE_LUT_SIZE){
+    info = treeLUT[(wcx+1) * TREE_LUT_SIZE + wcz];
+    leaf = utils::withinDistance(x,y,z, info.trunk_x, info.leaves_y_pos, info.trunk_z, LEAVES_RADIUS);
+    }
+
+    if(!leaf &#38;&#38; wcx-1 &#62;= 0){
+    info = treeLUT[(wcx-1) * TREE_LUT_SIZE + wcz];
+    leaf = utils::withinDistance(x,y,z, info.trunk_x, info.leaves_y_pos, info.trunk_z, LEAVES_RADIUS);
+    }
+
+    if(!leaf &#38;&#38; wcz-1 &#62;= 0){
+    info = treeLUT[wcx * TREE_LUT_SIZE + (wcz-1)];
+    leaf = utils::withinDistance(x,y,z, info.trunk_x, info.leaves_y_pos, info.trunk_z, LEAVES_RADIUS);
+    }
+
+    if(!leaf &#38;&#38; wcz+1 &#60; TREE_LUT_SIZE){
+    info = treeLUT[wcx * TREE_LUT_SIZE + (wcz+1)];
+    leaf = utils::withinDistance(x,y,z, info.trunk_x, info.leaves_y_pos, info.trunk_z, LEAVES_RADIUS);
+    }
+}
+
+if(wood) block = Block::WOOD;
+if(leaf) block = Block::LEAVES;
+</code></pre>
+<p>The need to check neighbouring cells could be eliminated by ensuring trunks generate far enough from
+the border of the cell to include the foliage. But I like it this way, I think it gives it a bit of
+variation without the need for huge cells.</p>
+<p><img alt="Leaves!" src="/resources/projects/voxel2/trees-leaves.png"/> 
+<img alt="Leaves!" src="/resources/projects/voxel2/trees-leavescloseup.png"/> </p>
+<p>We can even generate different patterns for the leaves, by changing the distance function.</p>
+<p><img alt="Different leaves!" src="/resources/projects/voxel2/trees-leavesvariation.png"/> </p>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>
