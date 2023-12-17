@@ -1,4 +1,4 @@
-title: Voxel Engine (again)
+title: Voxel Engine (again) | Voxel Engine #1
 
 (Start of the project: August 2022 (java), October 2022 (c++/opengl), ongoing)
 

@@ -1,4 +1,4 @@
-title: Better Mesh Generation for my Voxel Engine
+title: Meshing using Geometry Shader | Voxel Engine #2
 
 # Better Mesh Generation for my Voxel Engine
 
