@@ -1,5 +1,4 @@
-Title: EmaMaker's Blog
-
+title: EmaMaker\'s blog
 Hello, I'm Emanuele, and this is my website!
 
 I like coding, electronics and robotics :)
