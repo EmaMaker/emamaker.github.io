@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FREE your Delta 2040 Turbo by WASP</title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="/events/index.html">Events</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+<p><strong>DISCLAIMER: this article is under construction and is likely to change a lot in the future. It is
+based upon my <a href="/notes/wasp2040.html">notes</a></strong></p>
+<h1 id="free-your-delta-wasp-2040-turbo">FREE your Delta Wasp 2040 Turbo!</h1>
+<p>And yes, FREE as in <strong>freedom</strong>! Ditch the proprietary hardware&#47;software combo and take a
+hold of your machine!</p>
+<h1 id="backstory">Backstory</h1>
+<p>So at the FabLab we have this Delta printer from the old days. They tell me it has always been a bit
+unreliable but when it worked it could pull off some amazing prints, with stunning quality and
+speeds up to 600 mm&#47;s, which is A LOT.</p>
+<p>I myself have experienced the unreliability of the machine: sometimes I can print good and fast,
+  sometimes the filament barely gets extruded.</p>
+<p>WASP is an Italian 3D-printer manifacturer focussing on large, fast delta printers. We are actually
+unsure whether our model is a Delta 2040 Turbo or a Delta 2040 Turbo2 or a plain Delta 2040. It probably is not a Delta 2040 Turbo since those came with an Arduino Mega 2560, while ours
+originally had a custom proprietary board with an Atmega SAM8x3, same as Arduino Due, and an ESP32
+for what the company reports to be OTA firmware updates. It is also likely that this printer was
+originally a Delta 2040 and the board was upgraded to that of a Delta 2040 Turbo2 by the previous
+guy with the help of WASP support. I don&#8217;t know for sure, I wasn&#8217;t there at the time.</p>
+<p>Problems arised when the microcontroller was suddenly unable to drive the E0 motor driver, looking with an oscilloscope no
+signal would come out of the pin itself. We deemed the pin broken and noticed that the board had a populated motor
+driver circuit for a secondary extruder which was unused by our single-extruder printer. We asked the company for the firmware (which
+    appeared based on Marlin 1.x) so that we could swap E0 and E2 pins and get the printer
+running again. The company refused to give us the firmware, telling me (in a phone call to the tech support)
+that older versions of their firmware were based on Marlin, but they later switched to a proprietary
+firmware. From our experience with 3d printers, we firmly believe that the firmware our printer ran
+was a slightly modified Marlin 1.x. If we are right WASP is not respecting GPLv3, which is the license MarlinFirmware is
+released under, by not releasing the modifications they did to the firmware to make their machine
+compatible.</p>
+<p>We decided not to pay the company to fix our board and instead to ditch the proprietary board alltogether and go for a more open one, and reconfiguring
+Marlin 2.1.x ourselves, so that we would have better control on the machine.</p>
+<h1 id="board-change">Board change</h1>
+<p>We decided to use a BigTreeTech SKR E3 Mini V3.0 board, with a Zonestar LCD.</p>
+<p>The board was chosen for its 32bit STM microcontroller and ability to be powered in the 12-24V
+range, since the original power supply is 19.4V and we still wanted to use it.</p>
+<p>The LCD was canibalized from my Anet A8, which I donated to the FabLab when I bought an Anycubic
+Kobra Neo this summer. Fear not, for I put a RepRap Discount Full Graphics LCD on the Anet A8 so that it
+could still be used.
+<br>
+The Zonestar LCD requires some wiring change, which I will provide in a later revision of this post. It is also to be noted that
+the LCD itself is driven at 5V, while the buttons form a voltage divider circuit which is read by
+an analog pin on the board, which are 3.3V. This means that we need either to step down the supply
+<strong>for the buttons alone</strong> to 3.3V or supply them with a separate 3.3V line all together.</p>
+<p>I decided for the latter since the
+board exposes both lines and we had a spare pin on the connector. This was the quickest solution
+which also did not need us to but new components. Driving the LCD itself at 3.3V works but required
+fiddling with the contrast voltage divider and had terrible screen update and response times.</p>
+<h1 id="extruder">Extruder</h1>
+<p>The printer packs a custom extruder, connected to the original board via an ethernet cable. The extruder itself
+has a little board which holds:</p>
+<ul>
+<li>AD597 thermocouple IC, since it uses a thermocouple and not a thermistor</li>
+<li>Ethernet jack, with connections for heater block and thermocouple output</li>
+<li>Fan power supply</li>
+</ul>
+<p>The extruder board has six pins which, looked from the top side and the ethernet jack pointing up
+are:</p>
+<ul>
+<li>Thermocouple IC IN- (also wired to GND, and per the AD597 datasheet), (1)</li>
+<li>Thermocouple IC IN+ (2)</li>
+<li>12V (3)</li>
+<li>Fan control (NOT GND) (4)</li>
+<li>2 Heather block pins (5,6. Order does not matter)</li>
+</ul>
+<p>The pins need to be mapped on the ethernet cable, which can be done by:</p>
+<ul>
+<li>Cutting one in half</li>
+<li>The two heather block pins on the board (5,6) each map to to wires in the ethernet cable</li>
+<li>12V (3) and fan control (4) each map to one wire on the ethernet cable</li>
+<li>IN- (GND) maps to one wire on the ethernet cable. This needs to be wired to a GND pin on the board</li>
+<li>The remaining wire of the ethernet cable is the thermocouple output</li>
+</ul>
+<p>After reverse-engineering the board layout, we removed the thermocouple and the IC all together and
+replaced them with a <code>ATC Semitec 104GT-2&#47;104NT-4-R025H42G</code> thermistor we had laying around as a
+replacement for other 3d printers, since the thermocouple IC is not well supported by Marlin and never reported the
+right temperature. The thermistor is supported by MarlinFW out of the box and required pulling out
+the thermocouple, desoldering the IC and connecting the thermistor to the pins that originally were
+for the thermocouple output and GND (pin 1 on board). <em>picture required</em>.</p>
+<p>In <code>Configuration.h</code></p>
+<pre><code>#define TEMP_SENSOR_0 5
+</code></pre>
+<h2 id="extuder-fan">Extuder fan</h2>
+<p>The extruder board exposes the fan. The SKR mini is powered at 19.4V. The extruder block has
+(please, do intend the following caps lock as a very angry scream, because at the FabLab we are
+ all indeed very angry at this
+ printer and their designers) <strong>A SINGLE FAN WHICH COOLS BOTH
+THE HEATING BLOCK AND THE PRINTED PART, FOR GOD&#8217;S SAKE</strong>. More so, the fan has an insane airflow and
+needs to be accurately calibrated because it prevents the extruder from reaching printing
+temperatures when it spins too fast, which means it can&#8217;t be powered directly at 12V.</p>
+<p>The original board treated it as a part fan, which means that the first layers of the print were in
+danger of heat creep since Cura by default does not activate the part fan until it finishes the
+bottom layers.</p>
+<p>So, following the SKR MINI E3 V3.0 docs, we wired the extruder fan to the FAN2 header and configured
+Marlin to automatically turn it on once the extruder heats up past 50C. Since we power our SKR at
+19.4V, we also had to set the max fan pwm to 140 in Marlin, so that we would never power the fans
+with more than 11.5V. It&#8217;s just something we discovered after burning a fan and having to disassemble the
+extruder for the tenth time, you may want to pay attention to it should you be unluckily enough to
+follow our path.</p>
+<p>In <code>Configuration_adv.h</code></p>
+<pre><code>#define FAN_MIN_PWM 30
+#define FAN_MAX_PWM 130
+
+...
+
+#define E0_AUTO_FAN_PIN FAN2_PIN
+
+...
+
+#define EXTRUDER_AUTO_FAN_TEMPERATURE 50
+#define EXTRUDER_AUTO_FAN_SPEED 90  &#47;&#47; 255 == full speed
+</code></pre>
+<h1 id="heated-bed">Heated bed</h1>
+<p>The bed is powered straight off 220V, 50Hz AC (We are in Italy, at that is the standard in Europe)
+    via a Triac. The wiring for this one is simple, just we just connected it to the dedicated
+    headers on the SKR mini paying attention to the polarity.</p>
+<h1 id="misc">Misc</h1>
+<ul>
+<li><p>At first I tried to use a RAMPS 1.4 for this printer. It worked, but the Arduino Mega 2560 would
+struggle with trigonometry required to run. I later tried using Klipper, so that the RPi would
+compute the heavier stuff. It worked, but unfortunately I could not get the fan control to work and
+the extruder would not heat enough as a consequence. Looking back, I had just wired the fan wrong
+and it was running full time all the time. I may have saved myself a lot of work had I discovered
+this earlier.</p></li>
+<li><p>We had some replacement extruders for the printer. We decided to use the two we could easily
+change the thermistor to. One of them had a basically destroyed nozzle, which explained why I
+couldn&#8217;t get a constant flow of filament out of it. Obviously it&#8217;s impossible to change the nozzle
+in this extuders, since they are just a long piece of metal.</p></li>
+<li><p>Further testing is required for calibrating steps&#47;mm. For Delta systems, this is done by printing a
+cube and measuring the height. We assume that all towers are equally built, so that every motor uses
+the same step&#47;mm.</p></li>
+<li><p>The board fan, the extruder motor fan and the chamber LED strip are powered at 12V. The board we
+chose does not expose a 12V line, so we used a separate buck converter in parallel to the board
+straight from the 19.4V suppy.</p></li>
+</ul>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>

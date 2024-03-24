@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title></title>
+</head>
+<body>
+<header><center>
+<a href="/index.html">Home</a>
+|
+<a href="/projects/index.html">Projects</a>
+|
+<a href="/notes/index.html">Notes</a>
+|
+<a href="/misc/index.html">Misc</a>
+|
+<a href="/events/index.html">Events</a>
+|
+<a href="https://git.emamaker.com/EmaMaker">Gitea</a>/<a
+href="https://github.com/EmaMaker">Github</a>/<a
+href="https://codeberg.com/emamaker/">Codeberg</a>
+|
+<a href="https://instagram.com/EmaMaker">Instagram</a>
+</center>
+</header>
+<article>
+<p>Delta 2040 Turbo by WASP</p>
+<p>Actually unsure whether it&#8217;s a Delta 2040 Turbo or a Delta 2040 Turbo2 or a plain Delta 2040.</p>
+<p>It probably is not a Delta 2040 Turbo since those came with an Arduino Mega 2560, while ours
+originally had a custom proprietary board with an Atmega SAM8x3, same as Arduino Due, and an ESP32
+for what the company reports to be OTA firmware updates.</p>
+<p>Microcontroller suddenly unable to driver the E0 motor driver, looking with an oscilloscope no
+signal would come out of the pin itself. Deemed broken, we noticed the board had a populated motor
+driver circuit for a secondary extruder which was unused by our single-extruder printer. We asked the company for the firmware (which
+    appeared based on Marlin 1.x) so that we could change but they refused saying that &#8220;it is proprietary&#8221;, which of
+course we did not believe. If we are right, and the firmware is really based on Marlin 1.x as they
+mentioned in a phone call, they are not respecting GPLv3, which is the license MarlinFirware is
+released under.</p>
+<p>Later changed the original board for an BTT SKR E3 Mini V3.0, with a Zonestar LCD.</p>
+<p>The Zonestar LCD requires some wiring change, <em>which I should provide</em>. It is also to be noted that
+the Zonestar LCD is driven at 5V, while the buttons form a voltage divider circuit which is read by
+an analog pin on the board, which are 3.3V. This means that we need either to step down the supply
+to 3.3V or supply it with a separate 3.3V line all together. I decided for the latter since the
+board exposes both lines and we had a spare pin on the connector. This was the quickest solution
+which also did not need us to but new components.</p>
+<p>The board was chosen for its 32bit STM microcontroller and ability to be powered in the 12-24V
+range, since the original power supply is 19.4V and we still wanted to use it.</p>
+<p>Packs a custom extruder, connected to the original board via an ethernet cable. The extruder itself
+has a little board which holds:</p>
+<ul>
+<li>AD597 thermocouple IC, since it uses a thermocouple and not a thermistor</li>
+<li>Ethernet jack, with connections for heater block and thermocouple output</li>
+<li>Fan power supply supply</li>
+</ul>
+<p>The extruder board has six pins which, looked from the top side and the ethernet jack pointing up
+are:</p>
+<ul>
+<li>Thermocouple IC IN- (also wired to GND, and per the AD597 datasheet (1)</li>
+<li>Thermocouple IC IN+ (2)</li>
+<li>12V (3)</li>
+<li>Fan control (NOT GND) (4)</li>
+<li>2 Heather block pins (5,6)</li>
+</ul>
+<p>The pins need to be mapped on the ethernet cable, which can be done by:</p>
+<ul>
+<li>Cutting one in half</li>
+<li>The two heather block pins on the board (5,6) each map to to wires in the ethernet cable</li>
+<li>12V (3) and fan control (4) each map to one wire on the ethernet cable</li>
+<li>IN- (GND) maps to one wire on the ethernet cable. This needs to be wired to a GND pin on the board</li>
+<li>The remaining wire of the ethernet cable is the thermocouple output</li>
+</ul>
+<p>After reverse-engineering the board layout, we removed the thermocouple and the IC all together and
+replaced them with a more standard thermistor, since the IC is not well supported by Marlin and never reported the
+right temperature. The thermistor is supported by MarlinFW out of the box and required pulling out
+the thermocouple, desoldering the IC and connecting the thermistor to the pins that originally were
+for the thermocouple output and GND (pin 1 on board).</p>
+<p>Further testing is required for calibrating steps&#47;mm. For Delta systems, this is done by printing a
+cube and measuring the height. We assume that all towers are equally built, so that every motor uses
+the same step&#47;mm.</p>
+<p>The board fan, the extruder motor fan and the chamber LED strip are powered at 12V. The board we
+chose does not expose a 12V line, so we used a separate buck converter in parallel to the board
+straight from the 19.4V suppy.</p>
+</article>
+
+<footer><p>
+	Author: EmaMaker
+	<a href="mailto:emamaker@tutanota.com">emamaker@tutanota.com</a>
+<br>
+	This website is statically generated from markdown using <a href="https://git.alemauri.eu/alema/rivet">rivet</a>, 
+	a static website generator written in POSIX compliant sh by my dear friend <a href="https://alemauri.eu">Alessandro Mauri. Check him out!</a>
+	<br>
+	This website is hosted on Codeberg Pages. <a href="https://codeberg.org/EmaMaker/pages>Feel free to check out the sources</a>
+</p>
+</footer>
+</body>
+</html>
