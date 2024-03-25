@@ -28,10 +28,12 @@ Fondazione, and our job this year (and last year, actually) was to take care of 
 league: mainly we had to overhaul the playing fields, but we also got to be referees for all
 the matches. Our other job, at the FabLab, with the wise direction and precious help of our
  friend Daniele Vigo (which is responsible for everything FabLab) was also to overhaul the
-	 playing fields of other categories: the Rescue Line and the Explorer. I'd like to write
-about how we rebuilt the playing fields for all the competitions, what our
+	 playing fields of other categories: the Rescue Line and the Explorer.
+
+I'd like to write
+about how we rebuilt the playfields for all the categories in the competition, what our
 objectives where, the design choices and a retrospect on their effectiveness. Most
-of my work went into the Explorer playfield.
+of my work went into the Explorer playfield, so I will focus on that in this post.
 
 ## Soccer
 
@@ -41,7 +43,8 @@ soccer field, the RoboCup Junior one is built on top of a green moquette. The
 [rules](https://junior.robocup.org/rcj-soccer-lighweight) give only
 one constraint on the moquette: it must be green, preferably a darker tone. This means that
 for each competition you attend, you can (and most surely will) find a field with different
-texture, tone and other characteristics to the one you are used to. The old playing fields used
+texture, color tone, depth, grip and other general characteristics to the one you are used to.
+The old moquette used
 to separate in long strands of cloth when they were slightly pulled by the robots' wheels. Those
 strands got into the shafts of the motors and the wheels, blocking them and preventing them
 from turning correctly. Basically, it was a great recipe for breaking motors and robots.
@@ -73,8 +76,8 @@ are three types of hotspots, each earning a different amount of points.
 - Light sources (2 points)
 - Sound sources (3 points)
 
-The playing field is 4x2 meters black board, which we made out of wood, and the hotspots are
-stations measuring 33x40x22 centimeters.
+The playing field is 4x2 meters black board, which we made out of wood, and the hotspots (or
+	_stations_) are wooden boxes measuring 33x40x22 centimeters.
 
 
 ### State of the art
@@ -99,12 +102,14 @@ type of hotspot in any given position
 attention not to squish them and break them.
 - Once the panels are flipped it's good to check that the cables are not broken. For this I just
 used a multimeter in continuity mode. Unfortunately, the cables need to be very long and do not have
-much wiggle room once they are in place, which means you better have long arms and long tester
-probes.
+much wiggle room once they are in place, which means you better have long arms and long
+probes for your multimeter.
 - You actually have to flip the panels. We are talking 4 1x2 meters 5cm thick (+ 5cm
 	standoff) now all screwed together, as there is now way to screw the panels once they
-are the right side up. Those are heavy. Like, incredibly heavy. We are talking a 5-6 people
-job heavy, while trying not have the wood snap on you because of poor coordination between them
+are the right side up. Those are heavy. Like, incredibly heavy. We are talking a -at least-
+6 people
+job heavy, and it obviously must not break because of poor coordination between all the
+people.
 
 - Bonus: the playing field was quite old and the wood was starting to crumble after years and
 years of screwing and unscrewing and transporting and general abuse by students.
@@ -115,7 +120,7 @@ So our goal in remaking the field was to make it as easy and quick as possible t
 assembled. First of all, we wanted to place the panels on the floor right side up from the
 get-go. Having to route cables on the back side and then flip the panels is just a bad idea. This
 meant that the routing had to be already done _before_ placing the panel on the floor. From
-this naturally came the second need, which was to have each hotspot independent of the
+this naturally came the second need, which was to have each hotspot station independent of the
 others, and the only eletrical signal running in the cables beneath the panels had to be power.
 
 
@@ -131,7 +136,7 @@ time needed for soldering and that the connections were easier to repair when on
 competitions, should some wires come loose in transport (fortunately, this has yet to
 	happen).
 
-Each panel as an outgoing male barrel jack connector and an incoming female barrel jack
+Each panel has an outgoing male barrel jack connector and an incoming female barrel jack
 connector, which allows for inter-panel connection while still mantaining all the panels
 connected in parallel (eletrically speaking).
 
@@ -139,9 +144,9 @@ Other, smaller, holes on the border of each panel were drilled to use extruded a
 profiles to mechanically connect panels to each other, and stratified polyamide panels were cut to fit
 inside the aluminum profile groves to make the external walls of the maze.
 
-Here's but the underside of the field looks like, with the cables running through. Needless
-to say it took the majority of the space at the fablab. Daniele for
-scale.
+Here's what the underside of the field looks like, with the cables running through. Needless
+to say it took the majority of the space at the fablab. We didn't have a banana quickly
+available, so we used Daniele for scale.
 
 <img src="/resources/events/romecup2024/explorer-cables.jpg" /> 
 
@@ -156,7 +161,7 @@ them inside a station.
 
 Anyway, currently there are three types of hotspots. The gas source is simulated by using
 alcohol
-fumes. We use common denatured alcohol, which tends to evaporate at ambient temperature. Davide 3d-printed an holder for the alcohol with holes
+fumes. We use common denatured alcohol, which tends to evaporate at ambient temperature. Davide 3d-printed a holder for the alcohol with holes
 on the top, to be placed on the playing field. The holder was modeled to stay under 1cm in
 height, which by the rules is the height limit of an obstacle.
 
@@ -199,6 +204,12 @@ that I could have the PCBs assembled my JLCPCB upon ordering and save a lot of m
 in a hurry at this point. The PCBs are quite simply and feature the microcontroller, a filter
 stage using a double RC cell (with the cutoff frequency set at just over 4kHz using 2 1.2kOhm
 resistors and 2 33nF) capacitors and an audio amplifier stage to drive the speaker.
+
+<figure class="half">
+<img class="half-img" src="/resources/events/romecup2024/explorer-sound-circuit.png" style="width:45%" /> 
+<img class="half-img" src="/resources/events/romecup2024/explorer-sound-schematic.png"
+style="width:55.25%" /> 
+</figure>
 
 Here is how the final PCBs arrived, leveraging JLCPCB incredibly cheap prices, I made panels
 to have more boards in the same space and keep tons of spares.
@@ -243,8 +254,8 @@ compared to the one onboard the teensy (possibly also related to the much lower 
 	frequency, almost 10x) that the higher-order armonics generated by the quantized change
 in voltage were still in the audible range. In fact, the second order RC filter I designed still
 let through a bit of signals up to 20kHz, which is in the audible range, and judging by ear
-the noise really seemed in high frequency. At first, and actually even after the first day of
-competitions was over I thought I really should have designed a better filter. 
+the noise really seemed in high frequency. At first, and actually until after the first day of
+competitions was over I just thought I should have designed a better filter. 
 
 ##### Solutions solutions solutions
 
@@ -254,8 +265,8 @@ accumulator calculations in floating point, which tends to be quite slow on 8bit
 microcontrollers, and, if I may add, having an if statement handle the wrap around inside the generation cycle really
 wasn't helping. This was something that was already on my mind, but I didn't think it was having have such a
 huge impact. So, since the first day of Soccer competitions was only planned for the
-competitors to settle in and make tests and adjustments, I used a rare moment of relax during
-the RomeCup to read [this article by Freescale/NXP](https://www.nxp.com/docs/en/application-note/AN1771.pdf), which explained exactly what I needed to do.
+teams to settle in and make tests and adjustments, I used a moment of relax (those are rare during
+the RomeCup) to read [this article by Freescale/NXP](https://www.nxp.com/docs/en/application-note/AN1771.pdf), which explained exactly what I needed to do.
 Basically, it explained how to perform DDS phase accumulator calculations only using
 integers instead of floating points. The idea behind it is that the `delta_phi` quantity is
 bound to be fractional, but it can be expressed as an integer and a decimal part.
@@ -270,7 +281,7 @@ in unsigned integers has the advantage of automatically taking care of wrapping 
 when the integer overflows, thus not needing a dedicated if statement, which can mess up the
 sample frequency and generate frequency instability and noise.
 
-However, this method has the very little drawback of presenting a bit of granularity in the
+However, this method has the drawback of presenting a bit of granularity in the
 frequency resolution of the output waveform, given by the fact that we are shriking a 32bit
 float into a 16bit quantity and only using 8 bits for the decimal part. This meant that not
 all my AtTiny's could be set exactly to 4kHz, has they present a large variation in the clock
@@ -280,7 +291,7 @@ work, so my solution was just to use a bigger integer. Using a unsigned 32-bit i
 dedicate 1 byte to the integer part of `delta_phi` and the rest to the decimal part,
 	 multiplied by 2^24. Having a 1-byte integer part is a direct consequence of having only
 	 256B of RAM on the uC. Proceding by powers of two, 128 is the last quantity I can use that
-	 can be contained in 256B of RAM. Initally I had the LUT size set to 128 to buy myself a bit
+	 can be contained in 256B of RAM. Initially I had the LUT size set to 128 to buy myself a bit
 	 of frequency resolution, only with later experiments I discovered that setting the
 	 LUT size to 32 was fine when using a 3-byte digital part. Coincidentally, this is the same exact number of bits used for 
 	 the mantissa and one bit more used for the exponent of a 32-bit float as estabilished by IEEE 754.
@@ -291,7 +302,7 @@ field, plus a couple of spares I was keeping for experiments myself, to exactly 
 The morning after, I spent about 10 minutes manually going through all the sound station on the
 play field and recalibrating them, accurately checking the frequency on the oscilloscope. The difference this made was immediately noticeable: all
 the noise was gone. Let me tell you, a 4kHz sine wave is quite an acute and annoying sound to hear,
-    but at this point I could really recognize it by ear and those sure were 4kHz!
+    but at this point I could recognize it by ear and those sure were 4kHz!
 
 You can try for yourself. I uploaded all the project files: KiCad boards, manufacturing files,
     code for the AtTiny and BOM to a [git repo](https://git.emamaker.com/emamaker/romecup-explorer)[(mirror)](https://github.com/emamaker/romecup-explorer)
@@ -309,7 +320,7 @@ playing field itself
 </figure>
 
 
-# Just a bunch of photos
+# A bunch of photos
 
 <img src="/resources/events/romecup2024/photo-explorer-1.jpg" /> 
 <img src="/resources/events/romecup2024/photo-explorer-2.jpg" /> 
